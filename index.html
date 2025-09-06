@@ -7,7 +7,7 @@
 <meta name="description" content="Tạo câu theo band A2/B1/B2/C1 (có ngữ cảnh), tạo văn nói & văn IELTS (Task1/Task2). Luyện dịch, chấm 10–100 & IELTS 4 tiêu chí. Donate QR hard-code.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f8fb;--panel:#fff;--ink:#0f1a2b;--muted:#6a7286;--line:#e9ecf3;--brand:#3a63ff;--brand2:#6f8bff;--ok:#12b886;--warn:#f59f00;--bad:#fa5252;--soft:0 8px 28px rgba(16,24,40,.08),0 2px 8px rgba(16,24,40,.06);--r:14px;--green:#0ead69;--red:#e03131}
+:root{--bg:#f7f8fb;--panel:#fff;--ink:#0f1a2b;--muted:#6a7286;--line:#e9ecf3;--brand:#3a63ff;--brand2:#6f8bff;--ok:#12b886;--warn:#f59f00;--bad:#fa5252;--soft:0 8px 28px rgba(16,24,40,.08),0 2px 8px rgba(16,24,40,.06);--r:14px;--green:#0ead69;--red:#e03131;--lh:1.6em}
 :root.dark{--bg:#0f1216;--panel:#171a1f;--ink:#e9edf6;--muted:#a1a8b5;--line:#262b33;--brand:#6f8bff;--brand2:#8ea2ff;--soft:0 10px 28px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25)}
 *{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
 .container{width:min(1200px,94vw);margin:18px auto 108px}
@@ -33,6 +33,8 @@ textarea{min-height:110px;resize:vertical}
 .progress>div{height:100%;background:linear-gradient(90deg,#6f8cff,#3a63ff)}
 .kv{display:grid;grid-template-columns:140px 1fr;gap:6px;align-items:flex-start}
 .boxVI{padding:14px;border:1px dashed #d9e1f3;border-radius:12px;background:#fbfdff}
+.boxVI.limit10{line-height:var(--lh);max-height:calc(var(--lh) * 10);overflow:auto}
+:root.dark .boxVI{background:#111317;border-color:#2a2f37}
 .errtag{display:inline-block;margin:4px 6px 0 0;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#f7f9ff}
 :root.dark .errtag{background:#141826}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line)}
@@ -58,6 +60,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
     <div class="tabs">
       <button class="tab active" id="tabPractice">Luyện tập</button>
+      <button class="tab" id="tabManual">Tạo thủ công</button>
       <button class="tab" id="tabGenSent">Tạo Câu</button>
       <button class="tab" id="tabSpoken">Tạo Văn Nói</button>
       <button class="tab" id="tabIELTSGen">Tạo Văn IELTS</button>
@@ -70,7 +73,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </header>
 
-  <!-- PRACTICE (chính) -->
+  <!-- PRACTICE (đã bỏ nhập tay, “Câu hiện tại” ở trên, giới hạn 10 dòng + cuộn) -->
   <section id="secPractice" class="grid two" style="margin-top:16px">
     <div class="card row">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -78,23 +81,9 @@ textarea{min-height:110px;resize:vertical}
       </div>
       <div class="progress"><div id="progbar" style="width:0%"></div></div>
 
-      <!-- Nhập nội dung tay -->
-      <div class="card row" style="border-style:dashed">
-        <div class="sectionTitle">Nhập nội dung thủ công</div>
-        <div class="grid" style="grid-template-columns:1.2fr .8fr">
-          <div class="row">
-            <textarea id="manualVI" class="mono" placeholder="Dán câu/đoạn tiếng Việt vào đây, rồi ấn “Dùng nội dung này”…"></textarea>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <button id="btnUseManual" class="btn">Dùng nội dung này</button>
-              <span class="subtle">Tip: Muốn AI tạo nội dung mới, hãy dùng các tab <b>Tạo Câu</b> / <b>Tạo Văn Nói</b> / <b>Tạo Văn IELTS</b>.</span>
-            </div>
-          </div>
-          <div class="row">
-            <div class="sectionTitle">Câu hiện tại</div>
-            <div id="viBox" class="boxVI mono">—</div>
-          </div>
-        </div>
-      </div>
+      <!-- Câu hiện tại (ở trên) -->
+      <div class="sectionTitle">Câu hiện tại</div>
+      <div id="viBox" class="boxVI mono limit10">—</div>
 
       <div class="row">
         <div class="sectionTitle">Bản dịch của bạn</div>
@@ -126,6 +115,16 @@ textarea{min-height:110px;resize:vertical}
         <div id="gradeDiff" class="diff mono"></div>
         <div id="gradeBreakdown" class="row"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- TẠO THỦ CÔNG (tab riêng) -->
+  <section id="secManual" class="card row" style="display:none;margin-top:16px">
+    <div class="badge">Tạo câu/đoạn tiếng Việt thủ công • Thêm vào Luyện tập</div>
+    <textarea id="manualVI" class="mono" placeholder="Dán nhiều dòng, mỗi dòng 1 câu. Có thể dán đoạn dài."></textarea>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button id="btnUseManual" class="btn primary">Thêm vào Luyện tập</button>
+      <span id="manualHint" class="subtle"></span>
     </div>
   </section>
 
@@ -172,7 +171,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </section>
 
-  <!-- TẠO VĂN NÓI (có Ngữ cảnh) -->
+  <!-- TẠO VĂN NÓI -->
   <section id="secSpoken" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo bài văn <b>phong cách văn nói</b> (tiếng Việt) • Có ô Ngữ cảnh</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -230,7 +229,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </section>
 
-  <!-- WRITING (chấm IELTS + dịch bài VI→EN Task) -->
+  <!-- WRITING -->
   <section id="secWriting" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Writing Task • Chấm IELTS bài EN & Dịch bài VI ➜ EN (Task1/Task2) • Có thể đính kèm ảnh biểu đồ</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -405,7 +404,7 @@ const store={
 };
 
 /* ===== Tabs ===== */
-const tabs=[['#tabPractice','#secPractice'],['#tabGenSent','#secGenSent'],['#tabSpoken','#secSpoken'],['#tabIELTSGen','#secIELTSGen'],['#tabWriting','#secWriting'],['#tabAsk','#secAsk'],['#tabDict','#secDict'],['#tabHistory','#secHistory'],['#tabSettings','#secSettings']];
+const tabs=[['#tabPractice','#secPractice'],['#tabManual','#secManual'],['#tabGenSent','#secGenSent'],['#tabSpoken','#secSpoken'],['#tabIELTSGen','#secIELTSGen'],['#tabWriting','#secWriting'],['#tabAsk','#secAsk'],['#tabDict','#secDict'],['#tabHistory','#secHistory'],['#tabSettings','#secSettings']];
 tabs.forEach(([b,s])=>$(b).onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section.card,section.grid').forEach(x=>x.style.display='none');$(b).classList.add('active');$(s).style.display='grid'; if(s==='#secHistory') renderHistory();});
 
 /* ===== Practice data ===== */
@@ -427,7 +426,17 @@ renderPractice();
 $('#btnPrev').onclick=()=>{idx=clamp(idx-1,0,items.length-1);renderPractice();};
 $('#btnNext').onclick=()=>{idx=clamp(idx+1,0,items.length-1);renderPractice();};
 window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')$('#btnPrev').click(); if(e.key==='ArrowRight')$('#btnNext').click();});
-$('#btnUseManual').onclick=()=>{const t=$('#manualVI').value.trim(); if(!t)return; items=[t]; idx=0; renderPractice(); document.getElementById('tabPractice').click(); };
+
+/* ===== Manual tab actions ===== */
+$('#btnUseManual').onclick=()=>{
+  const raw=($('#manualVI').value||'').trim();
+  if(!raw){$('#manualHint').textContent='Bạn chưa nhập nội dung.';return;}
+  const lines=raw.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){$('#manualHint').textContent='Không có câu hợp lệ.';return;}
+  items=items.concat(lines); store.items=items; idx=items.length-lines.length;
+  $('#manualHint').textContent=`Đã thêm ${lines.length} câu/đoạn vào Luyện tập.`;
+  setTimeout(()=>{$('#manualHint').textContent=''; document.getElementById('tabPractice').click(); renderPractice();},900);
+};
 
 /* ===== OpenAI base ===== */
 async function callOpenAI(sys,usr,max_tokens=900){
@@ -507,7 +516,7 @@ $('#btnGradeIELTS').onclick=async()=>{
   }catch(e){$('#gradeHeader').textContent='Lỗi: '+e; $('#gradeDiff').innerHTML=''; $('#gradeBreakdown').innerHTML='';}finally{setBusy(false);}
 };
 
-/* ===== TẠO CÂU (band + ngữ cảnh) ===== */
+/* ===== TẠO CÂU ===== */
 $('#btnGSGen').onclick=async()=>{
   const band=$('#gsBand').value, len=$('#gsLen').value, n=clamp(parseInt($('#gsCount').value||'6',10)||6,1,30), topic=$('#gsTopic').value.trim()||'chung', ctx=$('#gsContext').value.trim();
   const lengthHint = len==='short' ? '~8–15' : '~12–20';
@@ -519,7 +528,7 @@ $('#btnGSGen').onclick=async()=>{
 };
 $('#btnGSUse').onclick=()=>{const t=$('#gsOut').textContent.trim(); if(!t)return; const arr=t.split(/\n+/).map(s=>s.trim()).filter(Boolean); if(!arr.length)return; items=items.concat(arr); store.items=items; idx=items.length-arr.length; renderPractice(); document.getElementById('tabPractice').click(); };
 
-/* ===== TẠO VĂN NÓI (ngữ cảnh) ===== */
+/* ===== TẠO VĂN NÓI ===== */
 $('#btnSpGen').onclick=async()=>{
   const topic=$('#spTopic').value.trim()||'đời sống', len=$('#spLen').value, words=len==='short'?110:(len==='long'?260:180), ctx=$('#spContext').value.trim();
   const sys=`Sinh bài VĂN TIẾNG VIỆT phong cách VĂN NÓI, tự nhiên, mạch lạc, ~${words} từ. Trả JSON {"spoken_vi":"..."} (plain text).`;
@@ -598,7 +607,7 @@ const drawer=$('#drawer'), bd=$('#backdrop'), av=$('#avatar'), nameI=$('#display
 function renderDonate(){ $('#dnName').textContent=DONATE_NAME; $('#dnNote').textContent=DONATE_NOTE; $('#dnQR').src=DONATE_QR_IMG; $('#dnPay').href=DONATE_PAY_URL; $('#dnCopy').onclick=async()=>{ try{await navigator.clipboard.writeText(DONATE_PAY_URL); $('#dnCopy').textContent='Đã copy ✓'; setTimeout(()=>$('#dnCopy').textContent='Copy link thanh toán',1200);}catch(_){alert('Copy thất bại. Link: '+DONATE_PAY_URL);} }; }
 function openDrawer(){drawer.classList.add('show');bd.classList.add('show');fillProfile();renderDonate();}
 function closeDrawer(){drawer.classList.remove('show');bd.classList.remove('show');}
-$('#btnHamburger').onclick=openDrawer; $('#btnCloseDrawer').onclick=closeDrawer; bd.onclick=closeDrawer;
+document.getElementById('btnHamburger').onclick=openDrawer; document.getElementById('btnCloseDrawer').onclick=closeDrawer; bd.onclick=closeDrawer;
 function fillProfile(){const at=store.attempts, t=at.length, avg=t?Math.round(at.reduce((s,a)=>s+(a.score||0),0)/t):0, cor=at.filter(a=>a.type==='simple'&&a.ok).length, rate=t?Math.round(100*cor/t):0; $('#pAvg').textContent=avg; $('#pTotal').textContent=t; $('#pRate').textContent=rate+'%'; av.src=store.avatar||'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="100%" height="100%" fill="%23e8ecf3"/><text x="50%" y="54%" font-size="36" text-anchor="middle" fill="%23555">🙂</text></svg>'; nameI.value=store.name||'';}
 av.onclick=()=>$('#filePicker').click();
 $('#filePicker').onchange=(e)=>{const f=e.target.files?.[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{store.avatar=r.result; av.src=r.result;}; r.readAsDataURL(f);};
