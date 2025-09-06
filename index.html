@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Luyện Dịch & Writing • Tạo Câu • Văn Nói • Văn IELTS</title>
+<title>GIÁO VIÊN AI - CHÚC MỌI NGƯỜI HỌC TẬP VUI VẺ</title>
 <meta name="description" content="Tạo câu theo band A2/B1/B2/C1 (có ngữ cảnh), tạo văn nói & văn IELTS (Task1/Task2). Luyện dịch, chấm 10–100 & IELTS 4 tiêu chí. Donate QR hard-code.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -54,8 +54,8 @@ textarea{min-height:110px;resize:vertical}
     <div style="display:flex;gap:8px;align-items:center">
       <button id="btnHamburger" class="hamburger" title="Menu">|||</button>
       <div>
-        <h1>AI Luyện Dịch & Writing (Gọn gàng)</h1>
-        <p class="lead">Tạo Câu (A2–C1) • Tạo Văn Nói • Tạo Văn IELTS • Luyện dịch + Chấm 10–100 & IELTS • Donate QR hard-code</p>
+        <h1>The Coach: WRITING</h1>
+        <p class="lead">Tạo Câu Chuẩn Band - Chấm Đủ 4 Tiêu Chí</p>
       </div>
     </div>
     <div class="tabs">
@@ -72,24 +72,20 @@ textarea{min-height:110px;resize:vertical}
       <button id="toggleTheme" class="themeToggle" title="Đổi giao diện">🌤️</button>
     </div>
   </header>
-
-  <!-- PRACTICE (đã bỏ nhập tay, “Câu hiện tại” ở trên, giới hạn 10 dòng + cuộn) -->
   <section id="secPractice" class="grid two" style="margin-top:16px">
     <div class="card row">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span class="badge">Bài luyện dịch VI → EN</span><span id="counter" class="subtle">Câu 1/1</span>
       </div>
       <div class="progress"><div id="progbar" style="width:0%"></div></div>
-
-      <!-- Câu hiện tại (ở trên) -->
-      <div class="sectionTitle">Câu hiện tại</div>
+      <div class="sectionTitle">Hãy Dịch</div>
       <div id="viBox" class="boxVI mono limit10">—</div>
 
       <div class="row">
-        <div class="sectionTitle">Bản dịch của bạn</div>
+        <div class="sectionTitle">Nhập Đáp Án Ở Đây Bạn Nhé🥰</div>
         <textarea id="answer" class="mono" placeholder="Gõ tiếng Anh ở đây..."></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="btnTranslateNow" class="btn">Dịch ngay (EN tham khảo)</button>
+          <button id="btnTranslateNow" class="btn">Xem mẫu câu tham khảo</button>
           <button id="btnSuggest" class="btn">Gợi ý</button>
           <button id="btnGradeSimple" class="btn primary">Chấm nhanh 10–100</button>
           <button id="btnGradeIELTS" class="btn">Chấm IELTS (4 tiêu chí)</button>
@@ -117,8 +113,6 @@ textarea{min-height:110px;resize:vertical}
       </div>
     </div>
   </section>
-
-  <!-- TẠO THỦ CÔNG (tab riêng) -->
   <section id="secManual" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo câu/đoạn tiếng Việt thủ công • Thêm vào Luyện tập</div>
     <textarea id="manualVI" class="mono" placeholder="Dán nhiều dòng, mỗi dòng 1 câu. Có thể dán đoạn dài."></textarea>
@@ -128,7 +122,6 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </section>
 
-  <!-- TẠO CÂU (A2–C1 + Ngữ cảnh) -->
   <section id="secGenSent" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo câu tiếng Việt theo band (A2/B1/B2/C1) + Ngữ cảnh • Dùng để luyện dịch</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -171,9 +164,8 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </section>
 
-  <!-- TẠO VĂN NÓI -->
   <section id="secSpoken" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo bài văn <b>phong cách văn nói</b> (tiếng Việt) • Có ô Ngữ cảnh</div>
+    <div class="badge">Tạo bài văn <b>phong cách văn nói</b> (tiếng Việt) • Theo Ngữ Cảnh</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
       <div class="row">
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
@@ -201,8 +193,6 @@ textarea{min-height:110px;resize:vertical}
       </aside>
     </div>
   </section>
-
-  <!-- TẠO VĂN IELTS -->
   <section id="secIELTSGen" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo bài văn <b>phong cách IELTS</b> (tiếng Việt): Task 1 / Task 2</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -228,10 +218,8 @@ textarea{min-height:110px;resize:vertical}
       </aside>
     </div>
   </section>
-
-  <!-- WRITING -->
   <section id="secWriting" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Writing Task • Chấm IELTS bài EN & Dịch bài VI ➜ EN (Task1/Task2) • Có thể đính kèm ảnh biểu đồ</div>
+    <div class="badge">Writing Task • Chấm IELTS bài EN & Dịch bài VI ➜ EN (Task1/Task2) • Chưa Hoàn Thiện Cho lắm Hi🥰</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
       <div class="row">
         <label>Đề bài</label>
@@ -283,16 +271,12 @@ textarea{min-height:110px;resize:vertical}
       <div id="wrBreakdown" class="row"></div>
     </div>
   </section>
-
-  <!-- ASK AI -->
   <section id="secAsk" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Hỏi AI (giải thích ngữ pháp, sửa câu, ví dụ theo ngữ cảnh)</div>
     <textarea id="askInput" class="mono" placeholder="Ví dụ: Giải thích present perfect vs past simple..."></textarea>
     <div style="display:flex;gap:8px;align-items:center"><button id="btnAsk" class="btn primary">Gửi</button><span id="askHint" class="subtle"></span></div>
     <div id="askOut" class="row"></div>
   </section>
-
-  <!-- DICTIONARY -->
   <section id="secDict" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Từ điển ngữ cảnh (IPA UK/US + ví dụ)</div>
     <div class="grid" style="grid-template-columns:1.1fr .9fr">
@@ -304,8 +288,6 @@ textarea{min-height:110px;resize:vertical}
       <aside class="row"><div class="sectionTitle">Lịch sử từ điển</div><div id="dictHistory" class="subtle">Chưa có.</div></aside>
     </div>
   </section>
-
-  <!-- HISTORY -->
   <section id="secHistory" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Lịch sử làm bài</div>
     <div class="row" style="grid-template-columns:repeat(4,1fr);gap:10px">
@@ -316,12 +298,10 @@ textarea{min-height:110px;resize:vertical}
     </div>
     <table class="table" id="hisTable"><thead><tr><th>Thời gian</th><th>Loại</th><th>Input</th><th>Điểm/Band</th><th>Kết quả</th></tr></thead><tbody></tbody></table>
   </section>
-
-  <!-- SETTINGS -->
   <section id="secSettings" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Cài đặt API</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row"><label>OpenAI API Key<input id="apiKey" class="input" type="password" placeholder="sk-..."></label><div class="subtle">Khi public, dùng proxy để ẩn key.</div></div>
+      <div class="row"><label>OpenAI API Key<input id="apiKey" class="input" type="password" placeholder="sk-..."></label><div class="subtle">Vì Đây Là Dự Án Share Source Nên Mọi Người Đăng Ký Api ChatGPT Thêm Vào Đây Để Dùng Chức Năng Nhé - Trường Hợp Public Dùng Proxy Để Ẩn Key.</div></div>
       <div class="row"><label>Model<select id="model" class="select"><option value="gpt-4o-mini" selected>gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option><option value="gpt-4.1-mini">gpt-4.1-mini</option></select></label><label style="margin-top:6px">Endpoint<input id="endpoint" class="input" value="https://api.openai.com/v1/chat/completions"></label></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center"><button id="btnSave" class="btn primary">Lưu</button><span id="saveMsg" class="subtle"></span></div>
@@ -331,8 +311,6 @@ textarea{min-height:110px;resize:vertical}
 <div class="footerNav">
   <div class="wrapNav"><span class="subtle">Phím tắt: ← / →</span><div style="display:flex;gap:8px"><button id="btnPrev" class="btn">Câu trước</button><button id="btnNext" class="btn primary">Câu tiếp theo</button></div></div>
 </div>
-
-<!-- DRAWER: PROFILE + DONATE -->
 <div id="drawer" class="drawer" aria-label="Menu">
   <div style="display:flex;justify-content:space-between;align-items:center">
     <div class="sectionTitle">Hồ sơ</div>
@@ -344,7 +322,7 @@ textarea{min-height:110px;resize:vertical}
       <img id="avatar" class="avatar" alt="Ảnh đại diện" src="">
       <div class="row" style="gap:6px">
         <input id="displayName" class="input" placeholder="Tên hiển thị">
-        <div class="subtle">Nhấp ảnh để đổi (lưu trong trình duyệt)</div>
+        <div class="subtle">Chúc Bạn Đạt Được Mục Tiêu Như Ý Hẹ Hẹ Hẹ</div>
       </div>
     </div>
   </div>
@@ -354,18 +332,17 @@ textarea{min-height:110px;resize:vertical}
     <div class="stat"><span>Tỉ lệ đúng</span><b id="pRate">0%</b></div>
   </div>
   <div class="row"><button id="btnExportCSV" class="btn">Xuất CSV</button><button id="btnResetProfile" class="btn">Xoá lịch sử</button></div>
-
-  <!-- DONATE (HARD-CODE) -->
+  
   <div class="card row" id="donatePanel" style="margin-top:12px">
     <div class="sectionTitle">Donate</div>
-    <div class="kv"><b>Người nhận</b><div id="dnName">—</div></div>
-    <div class="kv"><b>Ghi chú</b><div id="dnNote" class="subtle">—</div></div>
+    <div class="kv"><b>Tên Chủ Tài Khoản</b><div id="dnName">—</div></div>
+    <div class="kv"><b>Thông Điệp</b><div id="dnNote" class="subtle">—</div></div>
     <div class="row">
       <img id="dnQR" alt="QR Donate" style="max-width:100%;border-radius:10px;border:1px solid var(--line);box-shadow:var(--soft)">
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a id="dnPay" class="btn primary" target="_blank" rel="noopener">Mở trang thanh toán</a>
-      <button id="dnCopy" class="btn">Copy link thanh toán</button>
+      <a id="dnPay" class="btn primary" target="_blank" rel="noopener">Liên Hệ Tớ Nếu Cần Thêm Thông Tin Nhé</a>
+      <button id="dnCopy" class="btn">Link Facebook</button>
     </div>
   </div>
 
@@ -374,18 +351,14 @@ textarea{min-height:110px;resize:vertical}
 <div id="backdrop" class="backdrop"></div>
 
 <script>
-/* ===== DONATE (hard-code, KHÔNG dùng storage) ===== */
-const DONATE_NAME   = "Tên người nhận của bạn";                // ← sửa ở đây
-const DONATE_NOTE   = "Ủng hộ phát triển sản phẩm";
-const DONATE_QR_IMG = "https://example.com/your-qr.png";       // ← link ảnh QR
-const DONATE_PAY_URL= "https://your-payment-link.example.com";  // ← link thanh toán
-
-/* ===== Theme ===== */
+const DONATE_NAME   = "Hoàng xxxxxxxxxxx Tuấn";               
+const DONATE_NOTE   = "Sự Ủng Hộ Của Bạn Sẽ Giúp Ích Rất Lớn Cho Chúng Tôi";
+const DONATE_QR_IMG = "https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";       
+const DONATE_PAY_URL= "https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";
 const root=document.documentElement;const prefersDark=matchMedia('(prefers-color-scheme: dark)').matches;
 if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&prefersDark)){root.classList.add('dark');document.getElementById('toggleTheme').textContent='🌙';}
 document.getElementById('toggleTheme').onclick=()=>{root.classList.toggle('dark');const d=root.classList.contains('dark');localStorage.setItem('theme',d?'dark':'light');document.getElementById('toggleTheme').textContent=d?'🌙':'🌤️';};
 
-/* ===== Helpers & Storage ===== */
 const $=s=>document.querySelector(s); const el=(t,c,h)=>{const x=document.createElement(t);if(c)x.className=c;if(h!=null)x.innerHTML=h;return x;};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)); const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const S={items:'ls_items',idx:'ls_idx',attempts:'ls_attempts',api:'ai_key',mdl:'ai_model',ep:'ai_ep',dict:'dict_hist',avatar:'profile_avatar',name:'profile_name',wrp:'wr_prompt',wri:'wr_img'};
@@ -403,11 +376,10 @@ const store={
   get wri(){return localStorage.getItem(S.wri)||''}, set wri(v){localStorage.setItem(S.wri,v||'')}
 };
 
-/* ===== Tabs ===== */
+
 const tabs=[['#tabPractice','#secPractice'],['#tabManual','#secManual'],['#tabGenSent','#secGenSent'],['#tabSpoken','#secSpoken'],['#tabIELTSGen','#secIELTSGen'],['#tabWriting','#secWriting'],['#tabAsk','#secAsk'],['#tabDict','#secDict'],['#tabHistory','#secHistory'],['#tabSettings','#secSettings']];
 tabs.forEach(([b,s])=>$(b).onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section.card,section.grid').forEach(x=>x.style.display='none');$(b).classList.add('active');$(s).style.display='grid'; if(s==='#secHistory') renderHistory();});
 
-/* ===== Practice data ===== */
 let items=store.items.length?store.items:[
   "Chúng tôi đang xem phim ở rạp chiếu phim, phim rất hay.",
   "Họ đang xây một ngôi nhà mới, nó sẽ rất lớn.",
@@ -427,7 +399,6 @@ $('#btnPrev').onclick=()=>{idx=clamp(idx-1,0,items.length-1);renderPractice();};
 $('#btnNext').onclick=()=>{idx=clamp(idx+1,0,items.length-1);renderPractice();};
 window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')$('#btnPrev').click(); if(e.key==='ArrowRight')$('#btnNext').click();});
 
-/* ===== Manual tab actions ===== */
 $('#btnUseManual').onclick=()=>{
   const raw=($('#manualVI').value||'').trim();
   if(!raw){$('#manualHint').textContent='Bạn chưa nhập nội dung.';return;}
@@ -438,7 +409,6 @@ $('#btnUseManual').onclick=()=>{
   setTimeout(()=>{$('#manualHint').textContent=''; document.getElementById('tabPractice').click(); renderPractice();},900);
 };
 
-/* ===== OpenAI base ===== */
 async function callOpenAI(sys,usr,max_tokens=900){
   if(!store.key) throw new Error('Chưa có API key (tab Cài đặt).');
   const r=await fetch(store.ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+store.key},body:JSON.stringify({model:store.mdl,temperature:0.2,max_tokens,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
@@ -447,7 +417,6 @@ async function callOpenAI(sys,usr,max_tokens=900){
 const parseJSON=t=>{try{return JSON.parse(t.trim().replace(/^```json|```$/g,''))}catch(_){return null}};
 function setBusy(on){document.querySelectorAll('button').forEach(b=>b.disabled=!!on);}
 
-/* ===== Diff util ===== */
 function diffWords(a,b){
   const A=(a||'').split(/(\s+|[.,!?;:])/).filter(x=>x!==''); const B=(b||'').split(/(\s+|[.,!?;:])/).filter(x=>x!=='');
   const m=A.length,n=B.length;const dp=[...Array(m+1)].map(()=>Array(n+1).fill(0));
@@ -457,7 +426,6 @@ function diffWords(a,b){
   while(i<m){out.push(`<span class="del">${esc(A[i++])}</span>`);} while(j<n){out.push(`<span class="ins">${esc(B[j++])}</span>`);} return out.join('');
 }
 
-/* ===== Gợi ý & Dịch nhanh ===== */
 $('#btnSuggest').onclick=async()=>{
   const vi=items[idx]; const sys=`Bạn là AI Teacher. Trả JSON {"idea_en":"","idea_vi":"","vocab_en":[""],"vocab_vi":[""],"grammar_en":[""],"grammar_vi":[""]}`;
   try{setBusy(true);$('#hint').textContent='Đang gợi ý...'; const js=parseJSON(await callOpenAI(sys,'Vietnamese: '+vi,400));
@@ -473,7 +441,6 @@ $('#btnTranslateNow').onclick=async()=>{
   try{setBusy(true);$('#hint').textContent='Đang dịch...'; const en=await callOpenAI(sys,vi,250); $('#answer').value=en.trim(); $('#hint').textContent='Đã chèn bản dịch tham khảo.'; setTimeout(()=>$('#hint').textContent='',1200);}catch(e){$('#hint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
-/* ===== Chấm: 10–100 & IELTS siết chặt ===== */
 const SIMPLE_PROMPT=`You are a VERY STRICT English checker for Vietnamese→English translation.
 Return STRICT JSON ONLY: {"score":10-100,"explain_vi":"...","correction":"..."}
 Rules: 100 ONLY if fully correct in meaning, grammar, capitalization, spelling, punctuation; penalize ALL-CAPS/missing period.`;
@@ -516,7 +483,7 @@ $('#btnGradeIELTS').onclick=async()=>{
   }catch(e){$('#gradeHeader').textContent='Lỗi: '+e; $('#gradeDiff').innerHTML=''; $('#gradeBreakdown').innerHTML='';}finally{setBusy(false);}
 };
 
-/* ===== TẠO CÂU ===== */
+
 $('#btnGSGen').onclick=async()=>{
   const band=$('#gsBand').value, len=$('#gsLen').value, n=clamp(parseInt($('#gsCount').value||'6',10)||6,1,30), topic=$('#gsTopic').value.trim()||'chung', ctx=$('#gsContext').value.trim();
   const lengthHint = len==='short' ? '~8–15' : '~12–20';
@@ -528,7 +495,7 @@ $('#btnGSGen').onclick=async()=>{
 };
 $('#btnGSUse').onclick=()=>{const t=$('#gsOut').textContent.trim(); if(!t)return; const arr=t.split(/\n+/).map(s=>s.trim()).filter(Boolean); if(!arr.length)return; items=items.concat(arr); store.items=items; idx=items.length-arr.length; renderPractice(); document.getElementById('tabPractice').click(); };
 
-/* ===== TẠO VĂN NÓI ===== */
+/
 $('#btnSpGen').onclick=async()=>{
   const topic=$('#spTopic').value.trim()||'đời sống', len=$('#spLen').value, words=len==='short'?110:(len==='long'?260:180), ctx=$('#spContext').value.trim();
   const sys=`Sinh bài VĂN TIẾNG VIỆT phong cách VĂN NÓI, tự nhiên, mạch lạc, ~${words} từ. Trả JSON {"spoken_vi":"..."} (plain text).`;
@@ -539,7 +506,7 @@ $('#btnSpGen').onclick=async()=>{
 };
 $('#spUse').onclick=()=>{const t=$('#spOut').textContent.trim(); if(!t)return; items=items.concat([t]); store.items=items; idx=items.length-1; renderPractice(); document.getElementById('tabPractice').click(); };
 
-/* ===== TẠO VĂN IELTS ===== */
+
 $('#btnGenEssayVI').onclick=async()=>{
   const kind=$('#genEssayType').value, len=$('#genEssayLen').value, words=(len==='short'?140:(len==='long'?280:210));
   const sys=`Sinh bài VĂN TIẾNG VIỆT theo dạng IELTS ${kind==='task1'?'Task 1 (mô tả biểu đồ/so sánh số liệu)':'Task 2 (nêu quan điểm/argument)'} ~${words} từ, mạch lạc. Trả JSON {"essay_vi":"..."}`;
@@ -549,7 +516,7 @@ $('#btnGenEssayVI').onclick=async()=>{
 };
 $('#ieltsUse').onclick=()=>{const t=$('#ieltsGenOut').textContent.trim(); if(!t)return; items=items.concat([t]); store.items=items; idx=items.length-1; renderPractice(); document.getElementById('tabPractice').click(); };
 
-/* ===== Writing: prompt + chart + IELTS grading + dịch bài ===== */
+
 $('#wrPrompt').value = store.wrp||'';
 if(store.wri){ const img=$('#chartImg'); img.src=store.wri; img.style.display='block'; $('#chartBox').querySelector('span')?.remove(); }
 $('#chartBox').onclick=()=>$('#chartPicker').click();
@@ -584,7 +551,7 @@ $('#btnTranslateTask').onclick=async()=>{
   try{setBusy(true);$('#trTaskHint').textContent='Đang dịch...'; const out=await callOpenAI(sys,vi,1200); $('#trTaskOut').textContent=out.trim(); $('#trTaskHint').textContent='';}catch(e){$('#trTaskOut').textContent='Lỗi: '+e; $('#trTaskHint').textContent='';}finally{setBusy(false);}
 };
 
-/* ===== Dictionary ===== */
+
 function renderHistDict(){const hist=store.dict.slice(-12).reverse(); $('#dictHistory').innerHTML= hist.length?hist.map(w=>`<span class="errtag">${esc(w)}</span>`).join(''):'Chưa có.';}
 renderHistDict();
 async function dictAPI(q){const sys=`Bạn là từ điển EN⇄VI. Trả JSON {"headword":"","pos":[""],"ipa_uk":"","ipa_us":"","senses":[{"gloss_en":"","gloss_vi":"","examples":[{"en":"","vi":""}]}]}`; return parseJSON(await callOpenAI(sys,`Lookup: ${q}`,700));}
@@ -596,11 +563,11 @@ function showDict(d){const box=$('#dictOut'); box.innerHTML=''; if(!d){box.inner
 $('#btnLookup').onclick=async()=>{const q=($('#q').value||'').trim(); if(!q){$('#dictHint').textContent='Nhập từ cần tra.';return;} try{setBusy(true);$('#dictHint').textContent='Đang tra...'; const d=await dictAPI(q); showDict(d); const h=store.dict; if(!h.includes(q)) h.push(q); store.dict=h.slice(-50); renderHistDict(); $('#dictHint').textContent='';}catch(e){$('#dictOut').innerHTML=`<div class="mono">Lỗi: ${esc(e+'')}</div>`; $('#dictHint').textContent='';}finally{setBusy(false);} };
 $('#btnLookupFromVI').onclick=async()=>{const vi=$('#viBox').textContent.trim(); if(!vi){$('#dictHint').textContent='Không có câu Việt.';return;} try{setBusy(true);$('#dictHint').textContent='Đang dịch...'; const sys=`Dịch câu VI sang EN với 3 biến thể (neutral/casual/formal). Trả JSON {"variants":[{"style":"","en":"","explain_vi":""}]}`; const js=parseJSON(await callOpenAI(sys,vi,600)); const box=$('#dictOut'); box.innerHTML='<h3 class="sectionTitle">Gợi ý dịch theo ngữ cảnh</h3>'+ (js?.variants||[]).map(v=>`<div class="card row"><b>${esc(v.style)}</b><div class="mono">${esc(v.en)}</div><div class="subtle">${esc(v.explain_vi||'')}</div></div>`).join(''); $('#dictHint').textContent=''; }catch(e){$('#dictOut').innerHTML=`<div class="mono">Lỗi: ${esc(e+'')}</div>`; $('#dictHint').textContent='';}finally{setBusy(false);} };
 
-/* ===== Settings ===== */
+
 $('#apiKey').value=store.key; $('#model').value=store.mdl; $('#endpoint').value=store.ep;
 $('#btnSave').onclick=()=>{store.key=$('#apiKey').value.trim(); store.mdl=$('#model').value; store.ep=$('#endpoint').value.trim(); $('#saveMsg').textContent='Đã lưu.'; setTimeout(()=>$('#saveMsg').textContent='',1200);};
 
-/* ===== History/Profile/Donate ===== */
+
 function addHistory({type,input,score,band,ok}){const at=store.attempts; at.push({at:Date.now(),type,input,score,band,ok}); store.attempts=at; }
 function renderHistory(){const at=store.attempts, t=at.length, avg=t?Math.round(at.reduce((s,a)=>s+(a.score||0),0)/t):0, cor=at.filter(a=>a.type==='simple'&&a.ok).length, rate=t?Math.round(100*cor/t):0; $('#hisTotal').textContent=t; $('#hisAvg').textContent=avg; $('#hisCorrect').textContent=cor; $('#hisRate').textContent=rate+'%'; const tb=$('#hisTable tbody'); tb.innerHTML=at.slice().reverse().map(a=>`<tr><td>${new Date(a.at).toLocaleString()}</td><td>${esc(a.type)}</td><td class="mono">${esc(a.input||'')}</td><td>${a.band?('Band '+a.band.toFixed(1)):Math.round(a.score||0)}</td><td>${a.ok?'✅':'—'}</td></tr>`).join('');}
 const drawer=$('#drawer'), bd=$('#backdrop'), av=$('#avatar'), nameI=$('#displayName');
@@ -615,7 +582,6 @@ nameI.oninput=()=>{store.name=nameI.value.trim();};
 $('#btnExportCSV').onclick=()=>{const at=store.attempts; if(!at.length){alert('Chưa có dữ liệu.');return;} let csv='time,type,input,score,band,ok\n'; at.forEach(a=>{csv+=`${new Date(a.at).toISOString()},"${(a.type||'').replace(/"/g,'""')}","${(a.input||'').replace(/"/g,'""')}",${a.score??''},${a.band??''},${a.ok||false}\n`;}); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='history.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);};
 $('#btnResetProfile').onclick=()=>{ if(confirm('Xoá toàn bộ lịch sử?')){ store.attempts=[]; fillProfile(); renderHistory(); } };
 
-/* ===== Init ===== */
 function init(){renderPractice(); fillProfile();}
 init();
 </script>
