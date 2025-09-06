@@ -7,10 +7,11 @@
 <meta name="description" content="Tạo câu theo band A2/B1/B2/C1 (có ngữ cảnh), tạo văn nói & văn IELTS (Task1/Task2). Luyện dịch, chấm 10–100 & IELTS 4 tiêu chí. Donate QR hard-code.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f7f8fb;--panel:#fff;--ink:#0f1a2b;--muted:#6a7286;--line:#e9ecf3;--brand:#3a63ff;--brand2:#6f8bff;--ok:#12b886;--warn:#f59f00;--bad:#fa5252;--soft:0 8px 28px rgba(16,24,40,.08),0 2px 8px rgba(16,24,40,.06);--r:14px;--green:#0ead69;--red:#e03131;--lh:1.6em}
+:root{--bg:#f7f8fb;--panel:#fff;--ink:#0f1a2b;--muted:#6a7286;--line:#e9ecf3;--brand:#3a63ff;--brand2:#6f8bff;--ok:#12b886;--warn:#f59f00;--bad:#fa5252;--soft:0 8px 28px rgba(16,24,40,.08),0 2px 8px rgba(16,24,40,.06);--r:14px;--green:#0ead69;--red:#e03131;--lh:1.6em;--footer-h:78px}
 :root.dark{--bg:#0f1216;--panel:#171a1f;--ink:#e9edf6;--muted:#a1a8b5;--line:#262b33;--brand:#6f8bff;--brand2:#8ea2ff;--soft:0 10px 28px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25)}
-*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-.container{width:min(1200px,94vw);margin:18px auto 108px}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding-bottom:var(--footer-h);scroll-padding-bottom:calc(var(--footer-h) + 10px)}
+.container{width:min(1200px,94vw);margin:18px auto;min-height:calc(100dvh - var(--footer-h) - 36px)}
 header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 h1{font-size:22px;margin:0;font-weight:800}.lead{color:var(--muted);font-size:13px;margin:2px 0 0}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
@@ -38,14 +39,32 @@ textarea{min-height:110px;resize:vertical}
 .errtag{display:inline-block;margin:4px 6px 0 0;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#f7f9ff}
 :root.dark .errtag{background:#141826}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line)}
-.diff{line-height:1.8}.diff .del{background:rgba(224,49,49,.12);color:#e03131;text-decoration:line-through;border-radius:4px;padding:1px 2px}.diff .ins{background:rgba(14,173,105,.12);color:#0ead69;border-radius:4px;padding:1px 2px}
+/* Diff đẹp + gọn */
+.diff{line-height:1.75}
+.diff .del{background:rgba(224,49,49,.16);color:#e03131;text-decoration:line-through;border-radius:4px;padding:1px 2px}
+.diff .ins{background:rgba(14,173,105,.16);color:#0ead69;border-radius:4px;padding:1px 2px}
+.diff .ellipsis{color:var(--muted)}
+/* Drawer/Profile */
 .drawer{position:fixed;inset:0 0 0 auto;width:min(420px,92vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:var(--soft);transform:translateX(105%);transition:.25s;z-index:60;padding:16px}
 .drawer.show{transform:translateX(0)}.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.2s;z-index:55}
-.backdrop.show{opacity:1;pointer-events:auto}.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--line);cursor:pointer}
+.backdrop.show{opacity:1;pointer-events:auto}
+.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--line);cursor:pointer}
 .stat{display:flex;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfdff}
 :root.dark .stat{background:#111317}
-.footerNav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.75);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:50}
-:root.dark .footerNav{background:rgba(20,22,27,.65)}.wrapNav{width:min(1200px,94vw);margin:0 auto;padding:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* Footer đứng cố định, page không bị che */
+.footerNav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.78);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:50}
+:root.dark .footerNav{background:rgba(20,22,27,.65)}.wrapNav{width:min(1200px,94vw);margin:0 auto;padding:12px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* Chat AI */
+.chat{border:1px solid var(--line);border-radius:12px;padding:10px;max-height:420px;overflow:auto;background:var(--panel)}
+.msg{display:flex;gap:10px;margin:6px 0}
+.msg.me{justify-content:flex-end}
+.bubble{padding:10px 12px;border-radius:12px;border:1px solid var(--line);max-width:80%}
+.me .bubble{background:#eaf0ff}
+:root.dark .me .bubble{background:#141b2b}
+.type{border-right:2px solid var(--ink);animation:caret 1s steps(1) infinite}
+@keyframes caret{50%{border-color:transparent}}
+/* Khu kết quả dài có scroll riêng */
+.scrollBox{max-height:260px;overflow:auto}
 </style>
 </head>
 <body>
@@ -73,6 +92,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </header>
 
+  <!-- PRACTICE -->
   <section id="secPractice" class="grid two" style="margin-top:16px">
     <div class="card row">
       <div style="display:flex;justify-content:space-between;align-items:center">
@@ -81,6 +101,7 @@ textarea{min-height:110px;resize:vertical}
       <div class="progress"><div id="progbar" style="width:0%"></div></div>
       <div class="sectionTitle">Hãy Dịch</div>
       <div id="viBox" class="boxVI mono limit10">—</div>
+
       <div class="row">
         <div class="sectionTitle">Nhập Đáp Án Ở Đây Bạn Nhé🥰</div>
         <textarea id="answer" class="mono" placeholder="Gõ tiếng Anh ở đây..."></textarea>
@@ -108,12 +129,13 @@ textarea{min-height:110px;resize:vertical}
       <div class="card row">
         <div class="sectionTitle">Kết quả</div>
         <div id="gradeHeader" class="subtle">Chưa chấm.</div>
-        <div id="gradeDiff" class="diff mono"></div>
+        <div id="gradeDiff" class="diff mono scrollBox"></div>
         <div id="gradeBreakdown" class="row"></div>
       </div>
     </div>
   </section>
 
+  <!-- MANUAL -->
   <section id="secManual" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo câu/đoạn tiếng Việt thủ công • Thêm vào Luyện tập</div>
     <textarea id="manualVI" class="mono" placeholder="Dán nhiều dòng, mỗi dòng 1 câu. Có thể dán đoạn dài."></textarea>
@@ -123,6 +145,7 @@ textarea{min-height:110px;resize:vertical}
     </div>
   </section>
 
+  <!-- GEN SENT -->
   <section id="secGenSent" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Tạo câu tiếng Việt theo band (A2/B1/B2/C1) + Ngữ cảnh • Dùng để luyện dịch</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -159,14 +182,15 @@ textarea{min-height:110px;resize:vertical}
       </div>
       <aside class="row">
         <div class="sectionTitle">Kết quả</div>
-        <div id="gsOut" class="card mono" style="white-space:pre-wrap"></div>
+        <div id="gsOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
         <div style="display:flex;gap:8px"><button id="btnGSUse" class="btn">Thêm vào Luyện tập</button></div>
       </aside>
     </div>
   </section>
 
+  <!-- SPOKEN -->
   <section id="secSpoken" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo bài văn phong cách văn nói (tiếng Việt) • Theo Ngữ Cảnh</div>
+    <div class="badge">Tạo bài văn <b>phong cách văn nói</b> (tiếng Việt) • Theo Ngữ Cảnh</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
       <div class="row">
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
@@ -184,19 +208,21 @@ textarea{min-height:110px;resize:vertical}
         </label>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button id="btnSpGen" class="btn primary">Tạo văn nói (VI)</button>
+          <button id="btnSpUse" class="btn">Thêm vào Luyện tập</button>
           <button id="btnSpTransGrade" class="btn">Dịch & Chấm IELTS</button>
           <span id="spHint" class="subtle"></span>
         </div>
       </div>
       <aside class="row">
         <div class="sectionTitle">Kết quả</div>
-        <div id="spOut" class="card mono" style="white-space:pre-wrap"></div>
+        <div id="spOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
       </aside>
     </div>
   </section>
 
+  <!-- IELTS GEN -->
   <section id="secIELTSGen" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo bài văn phong cách IELTS (tiếng Việt): Task 1 / Task 2</div>
+    <div class="badge">Tạo bài văn <b>phong cách IELTS</b> (tiếng Việt): Task 1 / Task 2</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
       <div class="row">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -210,17 +236,19 @@ textarea{min-height:110px;resize:vertical}
             <option value="long">~260–300 từ</option>
           </select>
           <button id="btnGenEssayVI" class="btn primary">Tạo bài văn IELTS (VI)</button>
+          <button id="btnIELTSUse" class="btn">Thêm vào Luyện tập</button>
           <button id="btnIELTSTransGrade" class="btn">Dịch & Chấm IELTS</button>
           <span id="ieltsGenHint" class="subtle"></span>
         </div>
       </div>
       <aside class="row">
         <div class="sectionTitle">Kết quả</div>
-        <div id="ieltsGenOut" class="card mono" style="white-space:pre-wrap"></div>
+        <div id="ieltsGenOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
       </aside>
     </div>
   </section>
 
+  <!-- WRITING -->
   <section id="secWriting" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Writing Task • Chấm IELTS bài EN & Dịch bài VI ➜ EN (Task1/Task2)</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
@@ -265,36 +293,42 @@ textarea{min-height:110px;resize:vertical}
       </div>
       <textarea id="trTaskInput" class="mono" placeholder="Dán bài tiếng Việt (Task 1/2) vào đây..."></textarea>
       <div class="sectionTitle">Kết quả dịch (EN)</div>
-      <div id="trTaskOut" class="card mono" style="white-space:pre-wrap"></div>
+      <div id="trTaskOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
     </div>
 
     <div class="card row" id="wrResult" style="display:none">
       <div class="sectionTitle">Kết quả IELTS</div>
       <div id="wrHead" class="subtle">—</div>
-      <div id="wrDiff" class="diff mono"></div>
+      <div id="wrDiff" class="diff mono scrollBox"></div>
       <div id="wrBreakdown" class="row"></div>
     </div>
   </section>
 
+  <!-- ASK AI -->
   <section id="secAsk" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Hỏi AI (giải thích ngữ pháp, sửa câu, ví dụ theo ngữ cảnh)</div>
-    <textarea id="askInput" class="mono" placeholder="Ví dụ: Giải thích present perfect vs past simple..."></textarea>
-    <div style="display:flex;gap:8px;align-items:center"><button id="btnAsk" class="btn primary">Gửi</button><span id="askHint" class="subtle"></span></div>
-    <div id="askOut" class="row"></div>
+    <div class="chat" id="chatBox"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <input id="askInput" class="input" placeholder="Ví dụ: Giải thích present perfect vs past simple...">
+      <button id="btnAsk" class="btn primary">Gửi</button>
+      <span id="askHint" class="subtle"></span>
+    </div>
   </section>
 
+  <!-- DICT -->
   <section id="secDict" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Từ điển ngữ cảnh (IPA UK/US + ví dụ)</div>
+    <div class="badge">Từ điển ngữ cảnh (IPA UK/US + nhiều nghĩa + ví dụ)</div>
     <div class="grid" style="grid-template-columns:1.1fr .9fr">
       <div class="row">
         <label>Tra từ/cụm từ<input id="q" class="input" placeholder="take off, anxiety, run into..."></label>
-        <div style="display:flex;gap:8px;align-items:center"><button id="btnLookup" class="btn primary">Tra</button><button id="btnLookupFromVI" class="btn">Dịch câu VI → EN</button><span id="dictHint" class="subtle"></span></div>
+        <div style="display:flex;gap:8px;align-items:center"><button id="btnLookup" class="btn primary">Tra</button><button id="btnLookupFromVI" class="btn">Gợi ý dịch câu hiện tại</button><span id="dictHint" class="subtle"></span></div>
         <div id="dictOut" class="row"></div>
       </div>
       <aside class="row"><div class="sectionTitle">Lịch sử từ điển</div><div id="dictHistory" class="subtle">Chưa có.</div></aside>
     </div>
   </section>
 
+  <!-- HISTORY -->
   <section id="secHistory" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Lịch sử làm bài</div>
     <div class="row" style="grid-template-columns:repeat(4,1fr);gap:10px">
@@ -306,25 +340,29 @@ textarea{min-height:110px;resize:vertical}
     <table class="table" id="hisTable"><thead><tr><th>Thời gian</th><th>Loại</th><th>Input</th><th>Điểm/Band</th><th>Kết quả</th></tr></thead><tbody></tbody></table>
   </section>
 
+  <!-- SETTINGS -->
   <section id="secSettings" class="card row" style="display:none;margin-top:16px">
     <div class="badge">Cài đặt API</div>
     <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row"><label>OpenAI API Key<input id="apiKey" class="input" type="password" placeholder="sk-..."></label><div class="subtle">Vui lòng nhập API key của bạn.</div></div>
+      <div class="row"><label>OpenAI API Key<input id="apiKey" class="input" type="password" placeholder="sk-..."></label><div class="subtle">Nhập API key vào đây.</div></div>
       <div class="row"><label>Model<select id="model" class="select"><option value="gpt-4o-mini" selected>gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option><option value="gpt-4.1-mini">gpt-4.1-mini</option></select></label><label style="margin-top:6px">Endpoint<input id="endpoint" class="input" value="https://api.openai.com/v1/chat/completions"></label></div>
     </div>
     <div style="display:flex;gap:8px;align-items:center"><button id="btnSave" class="btn primary">Lưu</button><span id="saveMsg" class="subtle"></span></div>
   </section>
 </div>
 
+<!-- FOOTER -->
 <div class="footerNav">
   <div class="wrapNav"><span class="subtle">Phím tắt: ← / →</span><div style="display:flex;gap:8px"><button id="btnPrev" class="btn">Câu trước</button><button id="btnNext" class="btn primary">Câu tiếp theo</button></div></div>
 </div>
 
+<!-- PROFILE DRAWER -->
 <div id="drawer" class="drawer" aria-label="Menu">
   <div style="display:flex;justify-content:space-between;align-items:center">
     <div class="sectionTitle">Hồ sơ</div>
     <button id="btnCloseDrawer" class="btn">Đóng</button>
   </div>
+
   <div class="row" style="align-items:center">
     <div style="display:flex;gap:12px;align-items:center">
       <img id="avatar" class="avatar" alt="Ảnh đại diện" src="">
@@ -340,6 +378,7 @@ textarea{min-height:110px;resize:vertical}
     <div class="stat"><span>Tỉ lệ đúng</span><b id="pRate">0%</b></div>
   </div>
   <div class="row"><button id="btnExportCSV" class="btn">Xuất CSV</button><button id="btnResetProfile" class="btn">Xoá lịch sử</button></div>
+
   <div class="card row" id="donatePanel" style="margin-top:12px">
     <div class="sectionTitle">Donate</div>
     <div class="kv"><b>Tên Chủ Tài Khoản</b><div id="dnName">—</div></div>
@@ -350,19 +389,17 @@ textarea{min-height:110px;resize:vertical}
       <button id="dnCopy" class="btn">Copy link</button>
     </div>
   </div>
+
   <input id="filePicker" type="file" accept="image/*" style="display:none">
 </div>
 <div id="backdrop" class="backdrop"></div>
 
 <script>
+/* ====== CONSTANTS / STORAGE ====== */
 const DONATE_NAME="Hoàng xxxxxxxxxxx Tuấn";
 const DONATE_NOTE="Sự Ủng Hộ Của Bạn Sẽ Giúp Ích Rất Lớn Cho Chúng Tôi";
-const DONATE_QR_IMG="https://example.com/qr.png";
+const DONATE_QR_IMG="https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";
 const DONATE_PAY_URL="https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";
-
-const root=document.documentElement;const prefersDark=matchMedia('(prefers-color-scheme: dark)').matches;
-if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&prefersDark)){root.classList.add('dark');document.getElementById('toggleTheme').textContent='🌙';}
-document.getElementById('toggleTheme').onclick=()=>{root.classList.toggle('dark');const d=root.classList.contains('dark');localStorage.setItem('theme',d?'dark':'light');document.getElementById('toggleTheme').textContent=d?'🌙':'🌤️';};
 
 const $=s=>document.querySelector(s);
 const el=(t,c,h)=>{const x=document.createElement(t);if(c)x.className=c;if(h!=null)x.innerHTML=h;return x;};
@@ -383,9 +420,16 @@ const store={
   get wri(){return localStorage.getItem(S.wri)||''}, set wri(v){localStorage.setItem(S.wri,v||'')}
 };
 
-const tabs=[['#tabPractice','#secPractice'],['#tabManual','#secManual'],['#tabGenSent','#secGenSent'],['#tabSpoken','#secSpoken'],['#tabIELTSGen','#secIELTSGen'],['#tabWriting','#secWriting'],['#tabAsk','#secAsk'],['#tabDict','#secDict'],['#tabHistory','#secHistory'],['#tabSettings','#secSettings']];
-tabs.forEach(([b,s])=>$(b).onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section.card,section.grid').forEach(x=>x.style.display='none');$(b).classList.add('active');$(s).style.display='grid';if(s==='#secHistory')renderHistory();});
+/* ====== THEME ====== */
+const root=document.documentElement;const prefersDark=matchMedia('(prefers-color-scheme: dark)').matches;
+if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&prefersDark)){root.classList.add('dark');$('#toggleTheme').textContent='🌙';}
+$('#toggleTheme').onclick=()=>{root.classList.toggle('dark');const d=root.classList.contains('dark');localStorage.setItem('theme',d?'dark':'light');$('#toggleTheme').textContent=d?'🌙':'🌤️';};
 
+/* ====== TABS ====== */
+const tabs=[['#tabPractice','#secPractice'],['#tabManual','#secManual'],['#tabGenSent','#secGenSent'],['#tabSpoken','#secSpoken'],['#tabIELTSGen','#secIELTSGen'],['#tabWriting','#secWriting'],['#tabAsk','#secAsk'],['#tabDict','#secDict'],['#tabHistory','#secHistory'],['#tabSettings','#secSettings']];
+tabs.forEach(([b,s])=>$(b).onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('section.card,section.grid').forEach(x=>x.style.display='none');$(b).classList.add('active');$(s).style.display='grid'; if(s==='#secHistory') renderHistory(); if(s==='#secAsk') setTimeout(()=>$('#askInput').focus(),50);});
+
+/* ====== PRACTICE DATA ====== */
 let items=store.items.length?store.items:[
   "Chúng tôi đang xem phim ở rạp chiếu phim, phim rất hay.",
   "Họ đang xây một ngôi nhà mới, nó sẽ rất lớn.",
@@ -404,31 +448,33 @@ renderPractice();
 $('#btnPrev').onclick=()=>{idx=clamp(idx-1,0,items.length-1);renderPractice();};
 $('#btnNext').onclick=()=>{idx=clamp(idx+1,0,items.length-1);renderPractice();};
 window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')$('#btnPrev').click(); if(e.key==='ArrowRight')$('#btnNext').click();});
-$('#btnUseManual').onclick=()=>{
-  const raw=($('#manualVI').value||'').trim();
-  if(!raw){$('#manualHint').textContent='Bạn chưa nhập nội dung.';return;}
-  const lines=raw.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-  if(!lines.length){$('#manualHint').textContent='Không có câu hợp lệ.';return;}
-  items=items.concat(lines); store.items=items; idx=items.length-lines.length;
-  $('#manualHint').textContent=`Đã thêm ${lines.length} câu/đoạn vào Luyện tập.`;
-  setTimeout(()=>{$('#manualHint').textContent=''; document.getElementById('tabPractice').click(); renderPractice();},900);
-};
 
+/* ====== UTIL / OPENAI ====== */
+function setBusy(on){document.querySelectorAll('button').forEach(b=>b.disabled=!!on);}
 async function callOpenAI(sys,usr,max_tokens=900){
   if(!store.key) throw new Error('Chưa có API key (tab Cài đặt).');
   const r=await fetch(store.ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+store.key},body:JSON.stringify({model:store.mdl,temperature:0.2,max_tokens,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
-  if(!r.ok){const t=await r.text();throw new Error('API lỗi '+r.status+' — '+t);} const d=await r.json(); return d.choices?.[0]?.message?.content||'';
+  if(!r.ok){const t=await r.text();throw new Error('API lỗi '+r.status+' — '+t);}
+  const d=await r.json(); return d.choices?.[0]?.message?.content||'';
 }
 const parseJSON=t=>{try{return JSON.parse(t.trim().replace(/^```json|```$/g,''))}catch(_){return null}};
-function setBusy(on){document.querySelectorAll('button').forEach(b=>b.disabled=!!on);}
 
-function diffWords(a,b){
-  const A=(a||'').split(/(\s+|[.,!?;:])/).filter(x=>x!==''); const B=(b||'').split(/(\s+|[.,!?;:])/).filter(x=>x!=='');
+/* ====== DIFF GỌN: token-LCS + nén đoạn đúng ====== */
+function tokenize(s){return (s||'').replace(/\s+/g,' ').trim().split(/(\s+|[.,!?;:;()'"-])/).filter(x=>x!=='');}
+function diffCompact(a,b,maxSameRun=28){
+  const A=tokenize(a), B=tokenize(b);
   const m=A.length,n=B.length;const dp=[...Array(m+1)].map(()=>Array(n+1).fill(0));
-  for(let i=m-1;i>=0;i--) for(let j=n-1;j>=0;j--) dp[i][j]=A[i]===B[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-  let i=0,j=0,out=[];
-  while(i<m&&j<n){ if(A[i]===B[j]){out.push(esc(A[i]));i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]){out.push(`<span class="del">${esc(A[i])}</span>`);i++;} else {out.push(`<span class="ins">${esc(B[j])}</span>`);j++;}}
-  while(i<m){out.push(`<span class="del">${esc(A[i++])}</span>`);} while(j<n){out.push(`<span class="ins">${esc(B[j++])}</span>`);} return out.join('');
+  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)dp[i][j]=A[i]===B[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  let i=0,j=0,buf=[],sameRun=0;
+  const flushSame=()=>{if(sameRun>0){ if(sameRun>maxSameRun) buf.push('<span class="ellipsis"> … </span>'); else for(let k=0;k<sameRun;k++) buf.push(esc(A[i-sameRun+k])); sameRun=0;}};
+  while(i<m&&j<n){
+    if(A[i]===B[j]){sameRun++;i++;j++;if(sameRun>maxSameRun+10){flushSame();}}
+    else if(dp[i+1][j]>=dp[i][j+1]){flushSame();buf.push(`<span class="del">${esc(A[i])}</span>`);i++;}
+    else{flushSame();buf.push(`<span class="ins">${esc(B[j])}</span>`);j++;}
+  }
+  while(i<m){flushSame();buf.push(`<span class="del">${esc(A[i++])}</span>`);}
+  while(j<n){flushSame();buf.push(`<span class="ins">${esc(B[j++])}</span>`);}
+  flushSame(); return buf.join('');
 }
 function similarity(a,b){
   const tok=s=>new Set((s||'').toLowerCase().match(/[a-z']+/g)||[]);
@@ -436,6 +482,7 @@ function similarity(a,b){
   const uni=A.size+B.size-inter||1; return inter/uni;
 }
 
+/* ====== PROMPTS / SCORING ====== */
 const SIMPLE_PROMPT=`You are a VERY STRICT English checker for Vietnamese→English translation.
 Return STRICT JSON ONLY: {"score":10-100,"explain_vi":"...","correction":"..."}
 Rules: 100 ONLY if fully correct in meaning, grammar, capitalization, spelling, punctuation; penalize ALL-CAPS/missing period.`;
@@ -461,11 +508,10 @@ Return STRICT JSON ONLY:{
  "errors":[{"type":"tense|sva|articles|prepositions|word choice|collocation|punctuation|spelling|structure|cohesion","from":"…","to":"…","explain_vi":"…"}],
  "suggest_revision":"..."
 }
-Calibration rules:
-- Do NOT award Band 7.0+ unless the writing shows clear paragraphing, varied complex sentences, appropriate referencing/linking, and topic development.
-- Short or simple texts should sit in Band 5.0–6.0.
-- Band 8.0 requires rare errors, strong range+precision in lexis/grammar, and fully developed ideas.
-- Minimal changes only; if the essay is already good, suggest_revision may be identical.`;
+Calibration:
+- Do NOT give Band 7.0+ unless there is clear paragraphing, varied complex structures, logical development, precise lexis.
+- Very short/simple texts → Band 5.0–6.0 max.
+- Band 8.0 requires rare errors and strong range + precision.`;
 
 function bandFromScore(s){if(s>=95)return 9.0;if(s>=85)return 8.0;if(s>=75)return 7.0;if(s>=65)return 6.0;if(s>=55)return 5.0;if(s>=45)return 4.0;if(s>=35)return 3.0;if(s>=25)return 2.0;return 1.0;}
 function metrics(text){
@@ -489,31 +535,22 @@ function capByMode(text,mode){
   if(m.avgLen<10) cap=Math.min(cap,6.0);
   if(m.ttr<0.35) cap=Math.min(cap,6.5);
   if(m.ttr<0.28) cap=Math.min(cap,6.0);
-  if(mode==='task2'){
-    if(m.wordCount<180) cap=Math.min(cap,6.0);
-    else if(m.wordCount<220) cap=Math.min(cap,7.0);
-    else cap=Math.min(cap,8.5);
-  }else if(mode==='task1'){
-    if(m.wordCount<150) cap=Math.min(cap,6.5);
-    if(!/\boverall|in general|overall,\b/i.test(text)) cap=Math.min(cap,6.5);
-  }else if(mode==='spoken'){
-    if(m.wordCount<120) cap=Math.min(cap,6.0);
-    if(m.sentCount<3) cap=Math.min(cap,6.0);
-  }
+  if(mode==='task2'){ if(m.wordCount<180) cap=Math.min(cap,6.0); else if(m.wordCount<220) cap=Math.min(cap,7.0); }
+  if(mode==='task1'){ if(m.wordCount<150) cap=Math.min(cap,6.5); if(!/\boverall|in general\b/i.test(text)) cap=Math.min(cap,6.5); }
+  if(mode==='spoken'){ if(m.wordCount<120||m.sentCount<3) cap=Math.min(cap,6.0); }
   return {cap,m};
 }
-function showGradingResult(userText, js, headEl, diffEl, breakdownEl, kindLabel, mode){
+function showGradingResult(userText, js, headEl, diffEl, breakdownEl, label, mode){
   const baseBand=bandFromScore(js.overall_score);
   const {cap,m}=capByMode(userText,mode||null);
   let band=Math.min(baseBand,cap);
   let adjScore=js.overall_score;
-  const bandLoss=baseBand-band;
-  if(bandLoss>=0.5){adjScore=Math.max(0,Math.round(js.overall_score*(band/baseBand)));}
+  if(baseBand>band){adjScore=Math.max(0,Math.round(js.overall_score*(band/baseBand)));}
 
   const sim=similarity(userText,js.suggest_revision||'');
-  headEl.innerHTML=`<b>${kindLabel}: ${adjScore} — Band ${band.toFixed(1)}</b> <span class="subtle">(${m.wordCount}w, ${m.sentCount}s, TTR ${(m.ttr||0).toFixed(2)})</span>${sim>=0.92?` <span class="subtle">— Bài ổn, ít chỉnh</span>`:''}`;
+  headEl.innerHTML=`<b>${label}: ${adjScore} — Band ${band.toFixed(1)}</b> <span class="subtle">(${m.wordCount}w, ${m.sentCount}s, TTR ${(m.ttr||0).toFixed(2)})</span>${sim>=0.92?' • Ít chỉnh':''}`;
   const finalRev=(sim>=0.92)?userText:(js.suggest_revision||userText);
-  diffEl.innerHTML=diffWords(userText,finalRev);
+  diffEl.innerHTML=diffCompact(userText,finalRev);
 
   const c=js.criteria||{};
   breakdownEl.innerHTML=`
@@ -525,9 +562,21 @@ function showGradingResult(userText, js, headEl, diffEl, breakdownEl, kindLabel,
   `;
 }
 
+/* ====== BUTTONS: ADD / MANUAL ====== */
+$('#btnUseManual').onclick=()=>{
+  const raw=($('#manualVI').value||'').trim();
+  if(!raw){$('#manualHint').textContent='Bạn chưa nhập nội dung.';return;}
+  const lines=raw.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){$('#manualHint').textContent='Không có câu hợp lệ.';return;}
+  items=items.concat(lines); store.items=items; idx=items.length-lines.length;
+  $('#manualHint').textContent=`Đã thêm ${lines.length} câu/đoạn vào Luyện tập.`;
+  setTimeout(()=>{$('#manualHint').textContent=''; $('#tabPractice').click(); renderPractice();},900);
+};
+
+/* ====== AI TEACHER / TRANSLATE / GRADE ====== */
 $('#btnSuggest').onclick=async()=>{
   const vi=items[idx]; const sys=`Bạn là AI Teacher. Trả JSON {"idea_en":"","idea_vi":"","vocab_en":[""],"vocab_vi":[""],"grammar_en":[""],"grammar_vi":[""]}`;
-  try{setBusy(true);$('#hint').textContent='Đang gợi ý...'; const js=parseJSON(await callOpenAI(sys,'Vietnamese: '+vi,400));
+  try{setBusy(true);$('#hint').textContent='Đang gợi ý...'; const js=parseJSON(await callOpenAI(sys,'Vietnamese: '+vi,450));
     if(!js) throw 'Kết quả không hợp lệ.'; const showVI=$('#toggleViGloss').checked;
     $('#gIdea').textContent=(js.idea_en||'—')+(showVI&&js.idea_vi?` — ${js.idea_vi}`:'');
     $('#gVocab').textContent=(js.vocab_en||[]).join(', ')+(showVI&&js.vocab_vi?.length?` — ${js.vocab_vi.join(', ')}`:'');
@@ -544,7 +593,8 @@ $('#btnGradeSimple').onclick=async()=>{
   try{setBusy(true);$('#hint').textContent='Đang chấm (10–100)...'; const r=parseJSON(await callOpenAI(SIMPLE_PROMPT,`VI: ${vi}\nEN: ${en}`,450));
     if(!r||typeof r.score!=='number'||!r.correction) throw 'Kết quả không hợp lệ.';
     $('#gradeHeader').innerHTML=`<b>Điểm (Simple): ${Math.round(r.score)}</b> — ${esc(r.explain_vi||'')}`;
-    $('#gradeDiff').innerHTML=diffWords(en,r.correction); $('#gradeBreakdown').innerHTML='';
+    $('#gradeDiff').innerHTML=diffCompact(en,r.correction);
+    $('#gradeBreakdown').innerHTML='';
     $('#hint').textContent=''; addHistory({type:'simple',input:vi,score:r.score,band:null,ok:r.score>=90});
   }catch(e){$('#gradeHeader').textContent='Lỗi: '+e; $('#gradeDiff').innerHTML=''; $('#gradeBreakdown').innerHTML='';}finally{setBusy(false);}
 };
@@ -552,12 +602,13 @@ $('#btnGradeIELTS').onclick=async()=>{
   const vi=items[idx], en=($('#answer').value||'').trim(); if(!en){$('#hint').textContent='Bạn chưa nhập bản dịch.';return;}
   try{setBusy(true);$('#hint').textContent='Đang chấm IELTS...'; const r=parseJSON(await callOpenAI(IELTS_PROMPT,`Câu gốc (VI): ${vi}\nBài làm (EN): ${en}`,900));
     if(!r||!r.criteria||typeof r.overall_score!=='number') throw 'Kết quả không hợp lệ.';
-    showGradingResult(en,r,document.getElementById('gradeHeader'),document.getElementById('gradeDiff'),document.getElementById('gradeBreakdown'),'IELTS Overall','spoken');
+    showGradingResult(en,r,$('#gradeHeader'),$('#gradeDiff'),$('#gradeBreakdown'),'IELTS Overall','spoken');
     addHistory({type:'ielts',input:vi,score:r.overall_score,band:bandFromScore(r.overall_score),ok:false});
     $('#hint').textContent='';
   }catch(e){$('#gradeHeader').textContent='Lỗi: '+e; $('#gradeDiff').innerHTML=''; $('#gradeBreakdown').innerHTML='';}finally{setBusy(false);}
 };
 
+/* ====== GEN SENTENCES ====== */
 $('#btnGSGen').onclick=async()=>{
   const band=$('#gsBand').value, len=$('#gsLen').value, n=clamp(parseInt($('#gsCount').value||'6',10)||6,1,30), topic=$('#gsTopic').value.trim()||'chung', ctx=$('#gsContext').value.trim();
   const lengthHint = len==='short' ? '~8–15' : '~12–20';
@@ -567,38 +618,41 @@ $('#btnGSGen').onclick=async()=>{
     if(!js?.sentences?.length) throw 'Không nhận được danh sách.'; $('#gsOut').textContent=js.sentences.join('\n'); $('#gsHint').textContent='Đã tạo.'; setTimeout(()=>$('#gsHint').textContent='',1200);
   }catch(e){$('#gsOut').textContent='Lỗi: '+e; $('#gsHint').textContent='';}finally{setBusy(false);}
 };
-$('#btnGSUse').onclick=()=>{const t=$('#gsOut').textContent.trim(); if(!t)return; const arr=t.split(/\n+/).map(s=>s.trim()).filter(Boolean); if(!arr.length)return; items=items.concat(arr); store.items=items; idx=items.length-arr.length; renderPractice(); document.getElementById('tabPractice').click(); };
+$('#btnGSUse').onclick=()=>{const t=$('#gsOut').textContent.trim(); if(!t)return; const arr=t.split(/\n+/).map(s=>s.trim()).filter(Boolean); if(!arr.length)return; items=items.concat(arr); store.items=items; idx=items.length-arr.length; renderPractice(); $('#tabPractice').click(); };
 
+/* ====== SPOKEN GEN / ADD / GRADE ====== */
 $('#btnSpGen').onclick=async()=>{
   const topic=$('#spTopic').value.trim()||'đời sống', len=$('#spLen').value, words=len==='short'?110:(len==='long'?260:180), ctx=$('#spContext').value.trim();
   const sys=`Sinh bài VĂN TIẾNG VIỆT phong cách VĂN NÓI, tự nhiên, mạch lạc, ~${words} từ. Trả JSON {"spoken_vi":"..."} (plain text).`;
   const usr=`Chủ đề: ${topic}\nNgữ cảnh: ${ctx||'(trống)'}\nĐăng ký: thân thiện, gần gũi, mạch lạc.`;
-  try{setBusy(true);$('#spHint').textContent='Đang tạo văn nói...'; const js=parseJSON(await callOpenAI(sys,usr,700));
-    if(!js?.spoken_vi) throw 'Không nhận được bài văn.'; $('#spOut').textContent=js.spoken_vi.trim(); $('#spHint').textContent='Đã tạo.'; setTimeout(()=>$('#spHint').textContent='',1200);
+  try{setBusy(true);$('#spHint').textContent='Đang tạo văn nói...'; const js=parseJSON(await callOpenAI(sys,usr,800));
+    if(!js?.spoken_vi) throw 'Không nhận được bài văn.'; $('#spOut').textContent=js.spoken_vi.trim(); $('#spHint').textContent='Đã tạo.'; setTimeout(()=>$('#spHint').textContent='',1000);
   }catch(e){$('#spOut').textContent='Lỗi: '+e; $('#spHint').textContent='';}finally{setBusy(false);}
 };
+$('#btnSpUse').onclick=()=>{const t=$('#spOut').textContent.trim(); if(!t){$('#spHint').textContent='Chưa có nội dung.';return;} items=items.concat([t]); store.items=items; idx=items.length-1; $('#spHint').textContent='Đã thêm vào Luyện tập.'; setTimeout(()=>{$('#spHint').textContent=''; $('#tabPractice').click(); renderPractice();},800);};
 $('#btnSpTransGrade').onclick=async()=>{
   const vi=$('#spOut').textContent.trim(); if(!vi){$('#spHint').textContent='Chưa có văn nói để chấm.';return;}
   try{
     setBusy(true);$('#spHint').textContent='Đang dịch & chấm...';
     const en=await callOpenAI('Translate Vietnamese to natural English suitable for general essay; keep paragraphs. Return plain English only.',vi,1200);
-    const r=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[spoken]\n\nESSAY:\n${en}`,1200));
+    const r=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[SPOKEN]\n\nESSAY:\n${en}`,1200));
     if(!r||!r.criteria) throw 'Không chấm được.';
-    document.getElementById('tabWriting').click();
-    document.getElementById('wrEssay').value=en.trim();
-    showGradingResult(en,r,document.getElementById('wrHead'),document.getElementById('wrDiff'),document.getElementById('wrBreakdown'),'IELTS Overall (Spoken→EN)','spoken');
-    document.getElementById('wrResult').style.display='grid';
+    $('#tabWriting').click(); $('#wrEssay').value=en.trim();
+    showGradingResult(en,r,$('#wrHead'),$('#wrDiff'),$('#wrBreakdown'),'IELTS Overall (Spoken→EN)','spoken');
+    $('#wrResult').style.display='grid';
     $('#spHint').textContent='';
   }catch(e){$('#spHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
+/* ====== IELTS GEN / ADD / GRADE ====== */
 $('#btnGenEssayVI').onclick=async()=>{
   const kind=$('#genEssayType').value, len=$('#genEssayLen').value, words=(len==='short'?140:(len==='long'?280:210));
   const sys=`Sinh bài VĂN TIẾNG VIỆT theo dạng IELTS ${kind==='task1'?'Task 1 (mô tả biểu đồ/so sánh số liệu)':'Task 2 (nêu quan điểm/argument)'} ~${words} từ, mạch lạc. Trả JSON {"essay_vi":"..."}`;
   try{setBusy(true);$('#ieltsGenHint').textContent='Đang tạo bài văn VI...'; const js=parseJSON(await callOpenAI(sys,'',900));
-    if(!js?.essay_vi) throw 'Không nhận được bài văn.'; $('#ieltsGenOut').textContent=js.essay_vi.trim(); $('#ieltsGenHint').textContent='Đã tạo.'; setTimeout(()=>$('#ieltsGenHint').textContent='',1200);
+    if(!js?.essay_vi) throw 'Không nhận được bài văn.'; $('#ieltsGenOut').textContent=js.essay_vi.trim(); $('#ieltsGenHint').textContent='Đã tạo.'; setTimeout(()=>$('#ieltsGenHint').textContent='',1000);
   }catch(e){$('#ieltsGenOut').textContent='Lỗi: '+e; $('#ieltsGenHint').textContent='';}finally{setBusy(false);}
 };
+$('#btnIELTSUse').onclick=()=>{const t=$('#ieltsGenOut').textContent.trim(); if(!t){$('#ieltsGenHint').textContent='Chưa có nội dung.';return;} items=items.concat([t]); store.items=items; idx=items.length-1; $('#ieltsGenHint').textContent='Đã thêm vào Luyện tập.'; setTimeout(()=>{$('#ieltsGenHint').textContent=''; $('#tabPractice').click(); renderPractice();},800);};
 $('#btnIELTSTransGrade').onclick=async()=>{
   const vi=$('#ieltsGenOut').textContent.trim(); if(!vi){$('#ieltsGenHint').textContent='Chưa có bài để chấm.';return;}
   const kind=$('#genEssayType').value;
@@ -606,25 +660,25 @@ $('#btnIELTSTransGrade').onclick=async()=>{
     setBusy(true);$('#ieltsGenHint').textContent='Đang dịch & chấm...';
     const sysTr=kind==='task1'?'Translate to English in IELTS Task 1 style: overview + key features; objective tone; keep paragraphs.':'Translate to English in IELTS Task 2 argumentative style: clear thesis; academic register; keep paragraphs.';
     const en=await callOpenAI(sysTr,vi,1200);
-    const r=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[${kind}]\n\nESSAY:\n${en}`,1200));
+    const r=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[${kind.toUpperCase()}]\n\nESSAY:\n${en}`,1200));
     if(!r||!r.criteria) throw 'Không chấm được.';
-    document.getElementById('tabWriting').click();
-    document.getElementById('wrEssay').value=en.trim();
-    showGradingResult(en,r,document.getElementById('wrHead'),document.getElementById('wrDiff'),document.getElementById('wrBreakdown'),`IELTS Overall (${kind.toUpperCase()} VI→EN)` ,kind==='task1'?'task1':'task2');
-    document.getElementById('wrResult').style.display='grid';
+    $('#tabWriting').click(); $('#wrEssay').value=en.trim();
+    showGradingResult(en,r,$('#wrHead'),$('#wrDiff'),$('#wrBreakdown'),`IELTS Overall (${kind.toUpperCase()} VI→EN)`,kind==='task1'?'task1':'task2');
+    $('#wrResult').style.display='grid';
     $('#ieltsGenHint').textContent='';
   }catch(e){$('#ieltsGenHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
-document.getElementById('wrPrompt').value=store.wrp||'';
+/* ====== WRITING TAB ====== */
+$('#wrPrompt').value=store.wrp||'';
 if(store.wri){ const img=$('#chartImg'); img.src=store.wri; img.style.display='block'; $('#chartBox').querySelector('span')?.remove(); }
 $('#chartBox').onclick=()=>$('#chartPicker').click();
 $('#chartPicker').onchange=(e)=>{const f=e.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{const img=$('#chartImg'); img.src=r.result; img.style.display='block'; store.wri=r.result; $('#chartBox').querySelector('span')?.remove();}; r.readAsDataURL(f);};
 $('#btnGenPrompt').onclick=async()=>{
-  const type=$('#wrType').value; const sys=`Bạn là người ra đề Writing IELTS. Trả JSON {"prompt":"...","hints":["...","..."]}`;
+  const type=$('#wrType').value; const sys=`Bạn là người ra đề Writing IELTS. Trả JSON {"prompt":"...","hints":["...","...","..."]}`;
   const usr= type==='task1' ? 'Sinh 1 đề Task 1 mô tả biểu đồ (không cần ảnh), kèm 3 gợi ý dàn ý.' : 'Sinh 1 đề Task 2 (opinion/argument), kèm 3 gợi ý lập luận.';
-  try{setBusy(true);$('#wrPromptHint').textContent='Đang tạo đề...'; const js=parseJSON(await callOpenAI(sys,usr,400));
-    if(!js||!js.prompt) throw 'Kết quả không hợp lệ.'; $('#wrPrompt').value=js.prompt+(Array.isArray(js.hints)?('\n\nGợi ý:\n- '+js.hints.join('\n- ')):''); store.wrp=$('#wrPrompt').value; $('#wrPromptHint').textContent='Đã tạo đề.'; setTimeout(()=>$('#wrPromptHint').textContent='',1200);
+  try{setBusy(true);$('#wrPromptHint').textContent='Đang tạo đề...'; const js=parseJSON(await callOpenAI(sys,usr,450));
+    if(!js||!js.prompt) throw 'Kết quả không hợp lệ.'; $('#wrPrompt').value=js.prompt+(Array.isArray(js.hints)?('\n\nGợi ý:\n- '+js.hints.join('\n- ')):''); store.wrp=$('#wrPrompt').value; $('#wrPromptHint').textContent='Đã tạo đề.'; setTimeout(()=>$('#wrPromptHint').textContent='',1000);
   }catch(e){$('#wrPromptHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 $('#btnGradeEssay').onclick=async()=>{
@@ -634,8 +688,8 @@ $('#btnGradeEssay').onclick=async()=>{
     setBusy(true);$('#wrHint').textContent='Đang chấm IELTS...';
     const js=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n${prompt||'(no prompt)'}\n\nESSAY:\n${essay}`,1200));
     if(!js||!js.criteria) throw 'Kết quả không hợp lệ.';
-    showGradingResult(essay,js,document.getElementById('wrHead'),document.getElementById('wrDiff'),document.getElementById('wrBreakdown'),'IELTS Overall',mode);
-    document.getElementById('wrResult').style.display='grid'; $('#wrHint').textContent='';
+    showGradingResult(essay,js,$('#wrHead'),$('#wrDiff'),$('#wrBreakdown'),'IELTS Overall',mode);
+    $('#wrResult').style.display='grid'; $('#wrHint').textContent='';
     addHistory({type:'writing',input:(prompt||'—').slice(0,80),score:js.overall_score,band:bandFromScore(js.overall_score),ok:false});
   }catch(e){$('#wrHead').textContent='Lỗi: '+e; $('#wrDiff').innerHTML=''; $('#wrBreakdown').innerHTML=''; $('#wrResult').style.display='grid';}finally{setBusy(false);}
 };
@@ -649,32 +703,83 @@ $('#btnGradeTranslated').onclick=async()=>{
   const mode=$('#trTaskType').value==='task1'?'task1':'task2';
   try{
     setBusy(true);$('#trTaskHint').textContent='Đang chấm...';
-    const js=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[${mode}]\n\nESSAY:\n${en}`,1200));
+    const js=parseJSON(await callOpenAI(IELTS_WR_SYS,`PROMPT:\n[${mode.toUpperCase()}]\n\nESSAY:\n${en}`,1200));
     if(!js||!js.criteria) throw 'Kết quả không hợp lệ.';
-    document.getElementById('tabWriting').click();
-    showGradingResult(en,js,document.getElementById('wrHead'),document.getElementById('wrDiff'),document.getElementById('wrBreakdown'),'IELTS Overall (Dịch)',mode);
-    document.getElementById('wrResult').style.display='grid';
+    $('#tabWriting').click();
+    showGradingResult(en,js,$('#wrHead'),$('#wrDiff'),$('#wrBreakdown'),'IELTS Overall (Dịch)',mode);
+    $('#wrResult').style.display='grid';
     $('#trTaskHint').textContent='';
   }catch(e){$('#trTaskHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
+/* ====== CHAT AI (gõ từng chữ) ====== */
+function appendMsg(text, mine=false, typing=false){
+  const row=el('div','msg'+(mine?' me':'')); const b=el('div','bubble'); b.innerHTML=typing?('<span class="type">&nbsp;</span>'):esc(text); row.appendChild(b); $('#chatBox').appendChild(row); $('#chatBox').scrollTop=$('#chatBox').scrollHeight; return b;
+}
+async function typeOut(elm, text, speed=12){
+  elm.innerHTML=''; let i=0; return new Promise(res=>{const id=setInterval(()=>{elm.textContent+=text[i++]||''; $('#chatBox').scrollTop=$('#chatBox').scrollHeight; if(i>=text.length){clearInterval(id); res();}}, speed);});
+}
+$('#btnAsk').onclick=async()=>{
+  const q=($('#askInput').value||'').trim(); if(!q){$('#askHint').textContent='Nhập câu hỏi.';return;}
+  $('#askHint').textContent=''; appendMsg(q,true);
+  const bubble=appendMsg('',false,true);
+  try{
+    const sys=`Bạn là trợ lý tiếng Anh hữu ích. Giải thích ngắn gọn, có ví dụ; nếu người dùng đưa câu, hãy sửa và nêu lý do. Dùng tiếng Việt khi giải thích, ví dụ bằng EN.`;
+    const ans=await callOpenAI(sys,q,650);
+    await typeOut(bubble,ans.replace(/^```[\s\S]*?```/g,''),10);
+  }catch(e){bubble.textContent='Lỗi: '+e;}
+};
+
+/* ====== DICTIONARY (nhiều nghĩa) ====== */
+function renderHistDict(){const hist=store.dict.slice(-14).reverse(); $('#dictHistory').innerHTML= hist.length?hist.map(w=>`<span class="errtag">${esc(w)}</span>`).join(''):'Chưa có.';}
+renderHistDict();
+async function dictAPI(q){
+  const sys=`Bạn là từ điển EN⇄VI chuẩn. Trả JSON:
+{"headword":"","ipa_uk":"","ipa_us":"","pos":[""],"senses":[
+ {"label":"nghĩa chính","gloss_en":"","gloss_vi":"","examples":[{"en":"","vi":""}]},
+ {"label":"nghĩa khác/ngữ cảnh","gloss_en":"","gloss_vi":"","examples":[{"en":"","vi":""}]}
+], "phrases":[{"phrasal":"","gloss_vi":"","example_en":"","example_vi":""}]}
+Gợi ý 3–6 nghĩa nếu có; ví dụ tự nhiên.`;
+  const out=await callOpenAI(sys,'Lookup: '+q,900);
+  return parseJSON(out);
+}
+function showDict(d){
+  const box=$('#dictOut'); box.innerHTML='';
+  if(!d){box.innerHTML='<div class="mono">Không có dữ liệu.</div>';return;}
+  box.append(el('div','',`<h2 class="sectionTitle" style="margin:0">${esc(d.headword)} <span class="subtle">(${(d.pos||[]).join(', ')})</span></h2>`));
+  box.append(el('div','subtle',`IPA UK: /${esc(d.ipa_uk||'-')}/ • IPA US: /${esc(d.ipa_us||'-')}/`));
+  (d.senses||[]).forEach((s,i)=> box.append(el('div','card row',`<b>${i+1}. ${esc(s.label||s.gloss_en||'')}</b><div>${esc(s.gloss_en||'')}</div><div class="subtle">${esc(s.gloss_vi||'')}</div>${(s.examples||[]).map(e=>`<div class="mono">• ${esc(e.en)} — <span class="subtle">${esc(e.vi||'')}</span></div>`).join('')}`)));
+  if(Array.isArray(d.phrases)&&d.phrases.length){ box.append(el('div','card row',`<b>Phrasal/Collocation</b>${d.phrases.map(p=>`<div class="mono">• <b>${esc(p.phrasal)}</b> — ${esc(p.gloss_vi)}<br><span class="subtle">${esc(p.example_en)}</span> — ${esc(p.example_vi||'')}</div>`).join('')}`));}
+}
+$('#btnLookup').onclick=async()=>{const q=($('#q').value||'').trim(); if(!q){$('#dictHint').textContent='Nhập từ cần tra.';return;} try{setBusy(true);$('#dictHint').textContent='Đang tra...'; const d=await dictAPI(q); showDict(d); const h=store.dict; if(!h.includes(q)) h.push(q); store.dict=h.slice(-60); renderHistDict(); $('#dictHint').textContent='';}catch(e){$('#dictOut').innerHTML=`<div class="mono">Lỗi: ${esc(e+'')}</div>`; $('#dictHint').textContent='';}finally{setBusy(false);} };
+$('#btnLookupFromVI').onclick=async()=>{
+  const vi=$('#viBox').textContent.trim(); if(!vi){$('#dictHint').textContent='Không có câu Việt.';return;}
+  try{setBusy(true);$('#dictHint').textContent='Đang gợi ý...'; const sys=`Dịch câu VI sang EN với 3 biến thể (neutral/casual/formal). Trả JSON {"variants":[{"style":"","en":"","explain_vi":""}]}`; const js=parseJSON(await callOpenAI(sys,vi,600));
+    const box=$('#dictOut'); box.innerHTML='<h3 class="sectionTitle">Gợi ý dịch theo ngữ cảnh</h3>'+ (js?.variants||[]).map(v=>`<div class="card row"><b>${esc(v.style)}</b><div class="mono">${esc(v.en)}</div><div class="subtle">${esc(v.explain_vi||'')}</div></div>`).join('');
+    $('#dictHint').textContent='';
+  }catch(e){$('#dictOut').innerHTML=`<div class="mono">Lỗi: ${esc(e+'')}</div>`; $('#dictHint').textContent='';}finally{setBusy(false);}
+};
+
+/* ====== HISTORY / PROFILE ====== */
 function addHistory({type,input,score,band,ok}){const at=store.attempts; at.push({at:Date.now(),type,input,score,band,ok}); store.attempts=at; }
 function renderHistory(){const at=store.attempts, t=at.length, avg=t?Math.round(at.reduce((s,a)=>s+(a.score||0),0)/t):0, cor=at.filter(a=>a.type==='simple'&&a.ok).length, rate=t?Math.round(100*cor/t):0; $('#hisTotal').textContent=t; $('#hisAvg').textContent=avg; $('#hisCorrect').textContent=cor; $('#hisRate').textContent=rate+'%'; const tb=$('#hisTable tbody'); tb.innerHTML=at.slice().reverse().map(a=>`<tr><td>${new Date(a.at).toLocaleString()}</td><td>${esc(a.type)}</td><td class="mono">${esc(a.input||'')}</td><td>${a.band?('Band '+a.band.toFixed(1)):Math.round(a.score||0)}</td><td>${a.ok?'✅':'—'}</td></tr>`).join('');}
 const drawer=$('#drawer'), bd=$('#backdrop'), av=$('#avatar'), nameI=$('#displayName');
-function renderDonate(){ $('#dnName').textContent=DONATE_NAME; $('#dnNote').textContent=DONATE_NOTE; $('#dnQR').src=DONATE_QR_IMG; $('#dnPay').href=DONATE_PAY_URL; $('#dnCopy').onclick=async()=>{ try{await navigator.clipboard.writeText(DONATE_PAY_URL); }catch(_){ alert(DONATE_PAY_URL); } }; }
+function renderDonate(){ $('#dnName').textContent=DONATE_NAME; $('#dnNote').textContent=DONATE_NOTE; $('#dnQR').src=DONATE_QR_IMG; $('#dnPay').href=DONATE_PAY_URL; $('#dnCopy').onclick=async()=>{ try{await navigator.clipboard.writeText(DONATE_PAY_URL); $('#dnCopy').textContent='Đã copy ✓'; setTimeout(()=>$('#dnCopy').textContent='Copy link',1000);}catch(_){alert(DONATE_PAY_URL);} }; }
 function openDrawer(){drawer.classList.add('show');bd.classList.add('show');fillProfile();renderDonate();}
 function closeDrawer(){drawer.classList.remove('show');bd.classList.remove('show');}
-document.getElementById('btnHamburger').onclick=openDrawer; document.getElementById('btnCloseDrawer').onclick=closeDrawer; bd.onclick=closeDrawer;
+$('#btnHamburger').onclick=openDrawer; $('#btnCloseDrawer').onclick=closeDrawer; bd.onclick=closeDrawer;
 function fillProfile(){const at=store.attempts, t=at.length, avg=t?Math.round(at.reduce((s,a)=>s+(a.score||0),0)/t):0, cor=at.filter(a=>a.type==='simple'&&a.ok).length, rate=t?Math.round(100*cor/t):0; $('#pAvg').textContent=avg; $('#pTotal').textContent=t; $('#pRate').textContent=rate+'%'; av.src=store.avatar||'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="100%" height="100%" fill="%23e8ecf3"/><text x="50%" y="54%" font-size="36" text-anchor="middle" fill="%23555">🙂</text></svg>'; nameI.value=store.name||'';}
 av.onclick=()=>$('#filePicker').click();
 $('#filePicker').onchange=(e)=>{const f=e.target.files?.[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{store.avatar=r.result; av.src=r.result;}; r.readAsDataURL(f);};
 nameI.oninput=()=>{store.name=nameI.value.trim();};
-$('#btnExportCSV').onclick=()=>{const at=store.attempts; if(!at.length){alert('Chưa có dữ liệu.');return;} let csv='time,type,input,score,band,ok\n'; at.forEach(a=>{csv+=`${new Date(a.at).toISOString()},"${(a.type||'').replace(/"/g,'"')}" ,"${(a.input||'').replace(/"/g,'""')}",${a.score??''},${a.band??''},${a.ok||false}\n`;}); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='history.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);};
+$('#btnExportCSV').onclick=()=>{const at=store.attempts; if(!at.length){alert('Chưa có dữ liệu.');return;} let csv='time,type,input,score,band,ok\n'; at.forEach(a=>{const q=(a.input||'').replace(/"/g,'""'); csv+=`${new Date(a.at).toISOString()},"${(a.type||'').replace(/"/g,'""')}","${q}",${a.score??''},${a.band??''},${a.ok||false}\n`;}); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='history.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);};
 $('#btnResetProfile').onclick=()=>{ if(confirm('Xoá toàn bộ lịch sử?')){ store.attempts=[]; fillProfile(); renderHistory(); } };
 
+/* ====== SETTINGS ====== */
 $('#apiKey').value=store.key; $('#model').value=store.mdl; $('#endpoint').value=store.ep;
-$('#btnSave').onclick=()=>{store.key=$('#apiKey').value.trim(); store.mdl=$('#model').value; store.ep=$('#endpoint').value.trim(); $('#saveMsg').textContent='Đã lưu.'; setTimeout(()=>$('#saveMsg').textContent='',1200);};
+$('#btnSave').onclick=()=>{store.key=$('#apiKey').value.trim(); store.mdl=$('#model').value; store.ep=$('#endpoint').value.trim(); $('#saveMsg').textContent='Đã lưu.'; setTimeout(()=>$('#saveMsg').textContent='',1000);};
 
+/* ====== INIT ====== */
 function init(){renderPractice(); fillProfile();}
 init();
 </script>
