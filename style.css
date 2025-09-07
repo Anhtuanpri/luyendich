@@ -81,8 +81,3 @@ body{
 section.card, section.grid, .card.row, .row{
   overflow: visible;
 }
-
-.grid.two > .row .scrollBox,
-.grid.two aside .scrollBox{
-  min-height: 160px;
-}
