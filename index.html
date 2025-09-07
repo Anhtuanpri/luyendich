@@ -873,154 +873,116 @@ $('#btnSave').onclick=()=>{store.key=$('#apiKey').value.trim(); store.mdl=$('#mo
 /* ====== INIT ====== */
 function init(){renderPractice(); fillProfile(); applyFooterPadding();}
 init();
-</script>
-  <script>
-/* ================== CẤU HÌNH THÔNG BÁO ================== */
-// Ghi 'T' để BẬT thông báo, ghi 'F' để TẮT thông báo
-const ANNOUNCE_SWITCH = 'T';  // ← đổi T/F tại đây
-// Đổi mã phiên bản mỗi lần ra thông báo mới để hiện lại cho tất cả user
-const ANNOUNCE_ID = '2025-09-07-1';
-const ANNOUNCE_CONTENT = {
-  title: 'Cập nhật hệ thống 09/2025',
-  message:
-    '• Sửa highlight theo band, 3 màu cho Writing\n' +
-    '• Fix chấm 10–100 cho bài dài (chia đoạn)\n' +
-    '• Tách “Văn nói” và “Văn IELTS” đúng mục\n' +
-    '• Footer auto-fit, nút ổn định hơn',
-  linkText: 'Báo Lỗi Mới',
-  linkUrl: 'https://www.facebook.com/share/177ckm3bWp/?mibextid=wwXIfr'
-};
+</script><script>
+/* ====== ADMIN ANNOUNCEMENT (1-DAY DISMISS) ====== */
+/* Công tắc tổng: 'T' = bật, 'F' = tắt toàn bộ thông báo */
+const ANNOUNCE_SWITCH = 'T';
 
-/* ================== POPUP THÔNG BÁO ================== */
-(function adminAnnouncement(){
-  if (ANNOUNCE_SWITCH !== 'T') return;
-  const KEY = 'announce_dismiss_' + ANNOUNCE_ID;
-  if (localStorage.getItem(KEY) === '1') return;
+/* Đổi ANNOUNCE_ID mỗi khi bạn có thông báo mới để ép mọi người thấy lại */
+const ANNOUNCE_ID = '2025-09-07-v2';
 
-  // backdrop
-  const bg = document.createElement('div');
-  bg.id = 'adminAnnounceBackdrop';
-  Object.assign(bg.style, {
-    position:'fixed', inset:'0', background:'rgba(0,0,0,.35)',
-    backdropFilter:'blur(2px)', zIndex: 99998
-  });
+/* Nội dung thông báo (cho phép HTML đơn giản) */
+const ANNOUNCE_TITLE = 'Cập nhật hệ thống';
+const ANNOUNCE_HTML = `
+<ul style="margin:0 0 6px 18px">
+  <li>Sửa highlight: bài đúng band 7–9 sẽ tô <b>xanh</b>, gần đúng vàng (5–6), sai đỏ.</li>
+  <li>Chấm 10–100 cho bài dài: chia đoạn, không “bão lỗi”.</li>
+  <li>Gen IELTS: Task1/Task2 (VI) tách riêng với “Văn nói”.</li>
+</ul>
+<div class="subtle">Nếu bạn thấy lỗi, vui lòng F5 hoặc xoá cache.</div>
+`;
 
-  // modal
-  const box = document.createElement('div');
-  box.id = 'adminAnnounceBox';
-  Object.assign(box.style, {
-    position:'fixed', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
-    width:'min(560px,92vw)', background:'var(--panel, #fff)', color:'var(--ink, #0f1a2b)',
-    border:'1px solid var(--line, #e9ecf3)', borderRadius:'14px', boxShadow:'0 10px 30px rgba(16,24,40,.18)',
-    padding:'16px', zIndex: 99999, fontFamily:'Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial'
-  });
+/* Key lưu localStorage */
+const ANNOUNCE_LS = 'announce_state_v2';
 
-  const head = document.createElement('div');
-  head.style.display='flex'; head.style.justifyContent='space-between'; head.style.alignItems='center';
-  const h = document.createElement('h3');
-  h.textContent = ANNOUNCE_CONTENT.title || 'Thông báo';
-  h.style.margin='0'; h.style.fontWeight='800'; h.style.fontSize='18px';
+function _readState() {
+  try { return JSON.parse(localStorage.getItem(ANNOUNCE_LS) || '{}'); } catch(_) { return {}; }
+}
+function _writeState(s) {
+  localStorage.setItem(ANNOUNCE_LS, JSON.stringify(s || {}));
+}
+function _shouldShow() {
+  if (ANNOUNCE_SWITCH !== 'T') return false; // tắt toàn bộ
+  const now = Date.now();
+  const st = _readState();
+  // Nếu ID thay đổi -> hiện lại (bỏ qua until cũ)
+  if (st.id !== ANNOUNCE_ID) return true;
+  // Nếu chưa hết hạn “ẩn 1 ngày” -> không hiện
+  if (typeof st.until === 'number' && now < st.until) return false;
+  return true;
+}
+function _dismissOneDay() {
+  const until = Date.now() + 24*60*60*1000; // 24h
+  _writeState({ id: ANNOUNCE_ID, until });
+}
+function _justClose() {
+  // Không ghi until → lần sau vẫn hiện (trừ khi SWITCH=F)
+  _writeState({ id: ANNOUNCE_ID });
+}
 
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕';
-  Object.assign(closeBtn.style, {
-    border:'1px solid var(--line, #e9ecf3)', background:'var(--panel, #fff)', cursor:'pointer',
-    borderRadius:'10px', padding:'6px 10px', fontWeight:'700'
-  });
+function _injectAnnounceStyles() {
+  if (document.getElementById('announceStyles')) return;
+  const css = `
+  .announce-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);z-index:9998}
+  .announce-modal{position:fixed;inset:auto 0 0 0; margin:auto; top:12vh; width:min(560px,92vw); z-index:9999;
+    background:var(--panel,#fff); color:var(--ink,#0f1a2b); border:1px solid var(--line,#e9ecf3);
+    border-radius:14px; box-shadow:0 18px 60px rgba(16,24,40,.2),0 4px 14px rgba(16,24,40,.12); overflow:hidden}
+  .announce-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;
+    background:linear-gradient(180deg,var(--brand,#3a63ff),var(--brand2,#6f8bff)); color:#fff; font-weight:800}
+  .announce-body{padding:14px 16px; font-size:14px; line-height:1.6}
+  .announce-actions{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line,#e9ecf3)}
+  .bt{appearance:none;cursor:pointer;border-radius:10px;border:1px solid var(--line,#dfe5f0);padding:9px 12px;font-weight:700}
+  .bt.primary{background:#fff;color:#0f1a2b}
+  .bt.brand{background:linear-gradient(180deg,var(--brand,#3a63ff),var(--brand2,#6f8bff));color:#fff;border-color:transparent}
+  .x{background:transparent;border:none;color:#fff;font-size:18px;line-height:1;cursor:pointer;padding:0 4px}
+  `;
+  const style = document.createElement('style');
+  style.id = 'announceStyles';
+  style.textContent = css;
+  document.head.appendChild(style);
+}
 
-  const body = document.createElement('div');
-  body.style.marginTop='10px';
-  const p = document.createElement('pre');
-  p.textContent = ANNOUNCE_CONTENT.message || '';
-  Object.assign(p.style, {
-    margin:'0', whiteSpace:'pre-wrap', fontFamily:'ui-monospace, Menlo, Consolas, monospace',
-    fontSize:'13px', lineHeight:'1.6em', background:'var(--bg, #f7f8fb)', border:'1px dashed var(--line, #e9ecf3)',
-    padding:'12px', borderRadius:'10px'
-  });
+function showAnnouncement() {
+  _injectAnnounceStyles();
 
-  const actions = document.createElement('div');
-  actions.style.display='flex'; actions.style.gap='8px'; actions.style.marginTop='12px'; actions.style.flexWrap='wrap';
+  const bd = document.createElement('div');
+  bd.className = 'announce-backdrop'; bd.id = 'announceBackdrop';
 
-  const link = document.createElement('a');
-  link.textContent = ANNOUNCE_CONTENT.linkText || 'Xem chi tiết';
-  link.href = ANNOUNCE_CONTENT.linkUrl || '#';
-  link.target = '_blank'; link.rel = 'noopener';
-  Object.assign(link.style, {
-    display:'inline-block', textDecoration:'none', color:'#fff',
-    background:'linear-gradient(180deg,var(--brand,#3a63ff),var(--brand2,#6f8bff))',
-    padding:'10px 14px', borderRadius:'12px', fontWeight:'700'
-  });
+  const md = document.createElement('div');
+  md.className = 'announce-modal'; md.id = 'announceModal';
 
-  const dontShow = document.createElement('button');
-  dontShow.textContent = 'Đừng hiện lại';
-  Object.assign(dontShow.style, {
-    border:'1px solid var(--line, #e9ecf3)', background:'var(--panel, #fff)',
-    padding:'10px 14px', borderRadius:'12px', fontWeight:'700', cursor:'pointer'
-  });
+  md.innerHTML = `
+    <div class="announce-head">
+      <div>${ANNOUNCE_TITLE}</div>
+      <button class="x" aria-label="Đóng" title="Đóng">✕</button>
+    </div>
+    <div class="announce-body">${ANNOUNCE_HTML}</div>
+    <div class="announce-actions">
+      <button class="bt primary" id="annClose">Đóng</button>
+      <button class="bt brand" id="annHideDay">Không hiện lại trong 1 ngày</button>
+    </div>
+  `;
 
-  const small = document.createElement('div');
-  small.textContent = 'Quản trị viên • The Coach';
-  small.style.marginTop='6px'; small.style.color='var(--muted,#6a7286)'; small.style.fontSize='12px';
+  document.body.appendChild(bd);
+  document.body.appendChild(md);
 
-  closeBtn.onclick = () => { bg.remove(); box.remove(); };
-  dontShow.onclick = () => { localStorage.setItem(KEY,'1'); bg.remove(); box.remove(); };
+  const closeAll = (persist=false) => {
+    if (persist) _dismissOneDay(); else _justClose();
+    md.remove(); bd.remove();
+  };
 
-  head.appendChild(h);
-  head.appendChild(closeBtn);
-  body.appendChild(p);
-  actions.appendChild(link);
-  actions.appendChild(dontShow);
-  box.appendChild(head);
-  box.appendChild(body);
-  box.appendChild(actions);
-  box.appendChild(small);
-  document.body.appendChild(bg);
-  document.body.appendChild(box);
-})();
+  md.querySelector('.x').onclick = ()=>closeAll(false);
+  md.querySelector('#annClose').onclick = ()=>closeAll(false);
+  md.querySelector('#annHideDay').onclick = ()=>closeAll(true);
+  bd.onclick = ()=>closeAll(false); // click ra ngoài = đóng (không set 1 ngày)
+}
 
-/* ================== CHẶN DEVTOOLS / F12 / CHUỘT PHẢI ================== */
-(function hardBlockDevTools(){
-  function toast(msg){
-    const t = document.createElement('div');
-    Object.assign(t.style,{
-      position:'fixed', top:'20px', left:'50%', transform:'translateX(-50%)',
-      background:'rgba(224,49,49,.95)', color:'#fff', fontSize:'14px', fontWeight:'700',
-      padding:'10px 14px', borderRadius:'10px', boxShadow:'0 6px 20px rgba(0,0,0,.3)', zIndex: 99999
-    });
-    t.textContent = msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500);
-  }
-
-  // Chặn phím tắt phổ biến
-  document.addEventListener('keydown',function(e){
-    const key = e.key || '';
-    if (e.keyCode===123 || // F12
-        (e.ctrlKey && e.shiftKey && (key==='I' || key==='J' || key==='C' || key==='i' || key==='j' || key==='c')) ||
-        (e.ctrlKey && (key==='U' || key==='u')) ) {
-      e.preventDefault(); toast('⚠️ DevTools đã bị chặn'); return false;
-    }
-  }, {capture:true});
-
-  // Chặn menu chuột phải
-  document.addEventListener('contextmenu',function(e){ e.preventDefault(); toast('⚠️ Chuột phải đã bị vô hiệu hoá'); return false; }, {capture:true});
-
-  // Phát hiện mở DevTools bằng trick timing
-  let timer = setInterval(function(){
-    const t = Date.now();
-    // eslint-disable-next-line no-debugger
-    debugger; // nếu DevTools đang mở, thời gian sẽ bị trễ
-    if (Date.now() - t > 200){
-      toast('⚠️ Phát hiện DevTools đang mở');
-      // Có thể chuyển hướng nếu muốn:
-      // location.href = 'about:blank';
-    }
-  }, 1000);
-
-  // Thêm lớp bảo vệ console
-  if (window.console && typeof window.console.log === 'function'){
-    const origLog = console.log;
-    console.log = function(){ return origLog.apply(this, ['%c', 'color:transparent;', ...arguments]); };
-  }
-})();
+// Khởi chạy
+try {
+  if (_shouldShow()) showAnnouncement();
+} catch(e) {
+  console.error('announce err:', e);
+}
 </script>
 </body>
 </html>
