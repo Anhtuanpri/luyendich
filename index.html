@@ -942,7 +942,7 @@ $('#btnSave').onclick=()=>{store.key=$('#apiKey').value.trim(); store.mdl=$('#mo
 function init(){renderPractice(); fillProfile(); applyFooterPadding();}
 init();
 </script>
-  <script>
+<script>
 /* ========= CẤU HÌNH THÔNG BÁO (đổi tại đây) ========= */
 window.ANNOUNCE_SWITCH  = window.ANNOUNCE_SWITCH  ?? 'T'; // 'T' bật • 'F' tắt
 window.ANNOUNCE_ID      = window.ANNOUNCE_ID      ?? '2025-09-07-1'; // đổi mã để ép hiện lại
@@ -952,8 +952,8 @@ window.ANNOUNCE_CONTENT = window.ANNOUNCE_CONTENT ?? {
     '• Sửa highlight theo band, 3 màu cho Writing\n' +
     '• Fix chấm 10–100 cho bài dài (chia đoạn)\n' +
     '• Tách “Văn nói” và “Văn IELTS” đúng mục\n' +
-    '<span style="color:#e03131;font-weight:800;font-size:1.8em">🔥 Cập nhật thêm: Footer auto-fit & nút ổn định hơn</span>',
-  linkText: 'Liên hệ ADMIN báo lỗi',
+    '! 🔥 Cập nhật thêm: Tiếng Hàn - Trung - Nhật & Cập Nhật thêm chấm điểm Speaking cho 4 ngôn ngữ Bằng AI',
+  linkText: 'Liên hệ ADMIN để báo lỗi',
   linkUrl: 'https://www.facebook.com/share/1AYJ5ZGxK6/?mibextid=wwXIfr'
 };
 
@@ -1005,12 +1005,34 @@ window.addEventListener('DOMContentLoaded', function adminAnnouncement(){
     const body = document.createElement('div');
     body.style.marginTop='10px';
 
-    const pre = document.createElement('pre');
-    pre.textContent = (window.ANNOUNCE_CONTENT && window.ANNOUNCE_CONTENT.message) || '';
+    // ======= Message: hỗ trợ dòng đặc biệt màu đỏ =======
+    function escHtml(s){return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));}
+    const msgRaw = (window.ANNOUNCE_CONTENT && window.ANNOUNCE_CONTENT.message) || '';
+    let msgHTML;
+    if (msgRaw.includes('<')) {
+      msgHTML = msgRaw; // admin tự chèn HTML
+    } else {
+      msgHTML = msgRaw.split('\n').map(line=>{
+        if (/^!\s*/.test(line)) {
+          const t = line.replace(/^!\s*/,'');
+          return `<div style="color:#e03131;font-weight:800;font-size:1.6em">${escHtml(t)}</div>`;
+        }
+        return `<div>${escHtml(line)}</div>`;
+      }).join('');
+    }
+
+    const pre = document.createElement('div');
+    pre.innerHTML = msgHTML;
     Object.assign(pre.style, {
-      margin:'0', whiteSpace:'pre-wrap', fontFamily:'ui-monospace,Menlo,Consolas,monospace',
-      fontSize:'13px', lineHeight:'1.6em', background:'var(--bg,#f7f8fb)',
-      border:'1px dashed var(--line,#e9ecf3)', padding:'12px', borderRadius:'10px'
+      margin:'0',
+      whiteSpace:'pre-wrap',
+      fontFamily:'ui-monospace,Menlo,Consolas,monospace',
+      fontSize:'13px',
+      lineHeight:'1.6em',
+      background:'var(--bg,#f7f8fb)',
+      border:'1px dashed var(--line,#e9ecf3)',
+      padding:'12px',
+      borderRadius:'10px'
     });
 
     const actions = document.createElement('div');
@@ -1027,7 +1049,7 @@ window.addEventListener('DOMContentLoaded', function adminAnnouncement(){
     });
 
     const btnHide24 = document.createElement('button');
-    btnHide24.textContent = 'HIDE 24H';
+    btnHide24.textContent = 'Không hiển thị trong 24h';
     Object.assign(btnHide24.style, {
       border:'1px solid var(--line,#e9ecf3)', background:'var(--panel,#fff)',
       padding:'10px 14px', borderRadius:'12px', fontWeight:'700', cursor:'pointer'
