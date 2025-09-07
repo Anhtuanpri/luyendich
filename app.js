@@ -157,7 +157,6 @@ async function callOpenAI(sys, usr, max_tokens = 900) {
 
   return data.choices?.[0]?.message?.content || "";
 }
-
 // ===== Diff & Metrics =====
 function tokenize(s){
   return (s||"").replace(/\s+/g," ").trim()
@@ -203,8 +202,42 @@ function similarity(a,b){
   const uni=A.size+B.size-inter||1;return inter/uni
 }
 // ===== Prompts =====
-const SIMPLE_PROMPT=`You are a VERY STRICT English corrector for Vietnamese→English translations. Your task: always return STRICT JSON ONLY with this schema: {"score": 10-100,"explain_vi": "ngắn gọn bằng tiếng Việt","correction": "English corrected sentence (always natural & grammatically correct)"}`;
-const SIMPLE_PROMPT_LONG=`You are a VERY STRICT English corrector for Vietnamese→English translation of a long text. Your task: always return STRICT JSON ONLY with this schema: {"score": 10-100,"explain_vi": "ngắn gọn bằng tiếng Việt","correction": "English corrected paragraph (always natural & grammatically correct)"}`;
+// ===== Prompts (bản bắt buộc có Thì & Cấu trúc) =====
+const SIMPLE_PROMPT = `
+You are a VERY STRICT English corrector for Vietnamese → English translations.
+ALWAYS return STRICT JSON ONLY with this schema:
+{
+  "score": 10-100,
+  "explain_vi": "giải thích ngắn gọn bằng tiếng Việt về lỗi chính",
+  "correction": "English corrected sentence (natural & grammatically correct)",
+  "grammar_explain_vi": "giải thích ngữ pháp chi tiết bằng tiếng Việt",
+  "vocab_explain_vi": "giải thích từ vựng/cách dùng từ bằng tiếng Việt",
+  "tense_name": "tên thì đang dùng (EN), ví dụ: Present Simple / Past Simple / Present Perfect / Present Continuous ... hoặc 'Unknown'",
+  "tense_explain_vi": "giải thích vì sao là thì đó, bằng tiếng Việt",
+  "structure_name": "tên cấu trúc/ngữ pháp chính (EN), ví dụ: 'Question (Do/Does + S + V?)', 'There is/are', 'Comparatives', 'Passive voice' ... hoặc 'Unknown'",
+  "structure_explain_vi": "giải thích ngắn gọn cấu trúc đó, bằng tiếng Việt"
+}
+Rules:
+- Output MUST be valid JSON only. No markdown, no backticks.
+- If unsure for tense/structure, still fill "Unknown" and give a short Vietnamese note.`;
+
+const SIMPLE_PROMPT_LONG = `
+You are a VERY STRICT English corrector for Vietnamese → English translation of a LONG text (1–3 sentences per chunk).
+ALWAYS return STRICT JSON ONLY with this schema:
+{
+  "score": 10-100,
+  "explain_vi": "tóm tắt lỗi chính bằng tiếng Việt",
+  "correction": "English corrected paragraph (natural)",
+  "grammar_explain_vi": "giải thích ngữ pháp chi tiết bằng tiếng Việt",
+  "vocab_explain_vi": "giải thích dùng từ bằng tiếng Việt",
+  "tense_name": "tên thì (EN) cho phần chính của đoạn; hoặc 'Unknown'",
+  "tense_explain_vi": "giải thích vì sao là thì đó, bằng tiếng Việt",
+  "structure_name": "tên cấu trúc/ngữ pháp nổi bật; hoặc 'Unknown'",
+  "structure_explain_vi": "giải thích ngắn gọn bằng tiếng Việt"
+}
+Rules:
+- Output MUST be valid JSON only. No markdown, no backticks.
+- If unsure for tense/structure, still fill "Unknown".`;
 const IELTS_PROMPT=`You are a VERY STRICT IELTS-style grader for short English output from a Vietnamese source. Return STRICT JSON ONLY:{"overall_score":0-100,"criteria":{"grammar":{"score":0-25,"explain_vi":"...","suggest":"..."},"vocabulary":{"score":0-25,"explain_vi":"...","suggest":"..."},"coherence":{"score":0-25,"explain_vi":"...","suggest":"..."},"task":{"score":0-25,"explain_vi":"...","suggest":"..."}},"errors":[{"type":"...","from":"…","to":"…","explain_vi":"…"}],"suggest_revision":"..."}`;
 const IELTS_WR_SYS=`You are a STRICT IELTS Writing examiner for Task 1/Task 2. Return STRICT JSON ONLY:{"overall_score":0-100,"criteria":{"grammar":{"score":0-25,"explain_vi":"...","suggest":"..."},"vocabulary":{"score":0-25,"explain_vi":"...","suggest":"..."},"coherence":{"score":0-25,"explain_vi":"...","suggest":"..."},"task":{"score":0-25,"explain_vi":"...","suggest":"..."}},"errors":[{"type":"...","from":"…","to":"…","explain_vi":"…"}],"suggest_revision":"..."}`;
 
@@ -290,32 +323,88 @@ function groupChunks(sents,maxWords=60,maxSents=3){
   if(cur.length)groups.push(cur.join(" "));
   return groups;
 }
-async function gradeSimpleSmart(vi,en){
-  const words=(en.match(/[A-Za-z]+/g)||[]).length;
-  if(words<=40){
-    const r=parseJSON(await callOpenAI(SIMPLE_PROMPT,`VI: ${vi}\nEN: ${en}`,500));
-    if(!r||typeof r.score!=="number"||!r.correction)throw"Bad result";
-    return{score:r.score,explain:r.explain_vi||"",corr:r.correction};
-  }
-  const sents=splitBySentences(en);
-  const chunks=groupChunks(sents,80,3).slice(0,6);
-  let totalScore=0,totalLen=0,allExplain=[],corrParts=[];
-  for(const ch of chunks){
-    const len=(ch.match(/[A-Za-z]+/g)||[]).length||1;
-    const usr=`FULL_VI:\n${vi}\n\nEN_CHUNK:\n${ch}`;
-    const r=parseJSON(await callOpenAI(SIMPLE_PROMPT_LONG,usr,450));
-    if(!r||typeof r.score!=="number"||!r.correction)continue;
-    totalScore+=r.score*len;totalLen+=len;
-    allExplain.push(r.explain_vi||"");
-    corrParts.push(r.correction.trim());
-  }
-  if(!totalLen)throw"Không chấm được";
-  const avgScore=Math.round(totalScore/totalLen);
-  const corr=corrParts.join(" ").replace(/\s+/g," ").trim();
-  const explain=allExplain.filter(Boolean).slice(0,4).join(" | ");
-  return{score:avgScore,explain,corr};
+function guessTense(en){
+  const s = (en||"").toLowerCase();
+  if(/\b(am|is|are)\s+\w+ing\b/.test(s)) return {name:"Present Continuous", explain:"Có am/is/are + V-ing → hiện tại tiếp diễn."};
+  if(/\b(was|were)\s+\w+ing\b/.test(s)) return {name:"Past Continuous", explain:"Có was/were + V-ing → quá khứ tiếp diễn."};
+  if(/\b(has|have)\s+\w+ed\b/.test(s) || /\b(has|have)\s+been\b/.test(s)) return {name:"Present Perfect", explain:"Có has/have (+ V-ed/been) → hiện tại hoàn thành."};
+  if(/\bhad\s+\w+ed\b/.test(s)) return {name:"Past Perfect", explain:"Có had + V-ed → quá khứ hoàn thành."};
+  if(/\b(do|does)\s+\w+\b|\b(did)\s+\w+\b|\b\w+s\b(?!\w)/.test(s)) return {name:"Present/Past Simple", explain:"Có do/does/did hoặc V(s) dạng đơn → thì đơn."};
+  return {name:"Unknown", explain:"Không nhận dạng rõ ràng."};
 }
 
+function guessStructure(en){
+  const s = (en||"").trim();
+  if(/^\s*(do|does|did|am|is|are|was|were|have|has|had|can|could|will|would|should)\b/i.test(s))
+    return {name:"Question (Aux + Subject + Verb?)", explain:"Câu hỏi bắt đầu bằng trợ động từ/động từ to be."};
+  if(/^\s*there\s+(is|are)\b/i.test(s))
+    return {name:"There is/There are", explain:"Cấu trúc chỉ sự tồn tại (there is/are)."};
+  if(/\b(be|am|is|are|was|were)\s+\w+ed\b/i.test(s))
+    return {name:"Passive Voice", explain:"Dạng bị động: be + V-ed/PP."};
+  if(/\b(as|than)\b/i.test(s) && /\b(er)\b/.test(s))
+    return {name:"Comparatives", explain:"So sánh hơn/cấu trúc as...as / ... than."};
+  return {name:"Unknown", explain:"Không nhận dạng rõ ràng."};
+}
+async function gradeSimpleSmart(vi, en){
+  const wc = (en.match(/[A-Za-z]+/g)||[]).length;
+
+  // ===== Câu ngắn (≤40 từ) =====
+  if (wc <= 40){
+    const raw = await callOpenAI(SIMPLE_PROMPT, `VI: ${vi}\nEN: ${en}`, 600);
+    const r = parseJSON(raw);
+    if (!r || typeof r.score !== "number" || !r.correction) throw "Bad result";
+
+    return {
+      score: r.score,
+      explain: r.explain_vi || "",
+      corr: r.correction,
+      grammar: r.grammar_explain_vi || "",
+      vocab: r.vocab_explain_vi || "",
+      // tự đoán nếu model không trả
+      tense: r.tense_name 
+             ? { name: r.tense_name, explain: r.tense_explain_vi || "" }
+             : guessTense(en),
+      structure: r.structure_name
+             ? { name: r.structure_name, explain: r.structure_explain_vi || "" }
+             : guessStructure(en)
+    };
+  }
+
+  // ===== Đoạn dài → chấm theo cụm =====
+  const sents  = splitBySentences(en);
+  const chunks = groupChunks(sents, 80, 3).slice(0, 6);
+
+  let totalScore = 0, totalLen = 0;
+  let explains = [], corrParts = [], gramParts = [], vocabParts = [];
+
+  for (const ch of chunks){
+    const len = (ch.match(/[A-Za-z]+/g)||[]).length || 1;
+    const usr = `FULL_VI:\n${vi}\n\nEN_CHUNK:\n${ch}`;
+    const raw = await callOpenAI(SIMPLE_PROMPT_LONG, usr, 700);
+    const r = parseJSON(raw);
+    if (!r || typeof r.score !== "number" || !r.correction) continue;
+
+    totalScore += r.score * len; 
+    totalLen   += len;
+    corrParts.push(r.correction.trim());
+    if (r.explain_vi)         explains.push(r.explain_vi);
+    if (r.grammar_explain_vi) gramParts.push(r.grammar_explain_vi);
+    if (r.vocab_explain_vi)   vocabParts.push(r.vocab_explain_vi);
+  }
+
+  if (!totalLen) throw "Không chấm được";
+
+  return {
+    score: Math.round(totalScore/totalLen),
+    explain: explains.slice(0,3).join(" | "),
+    corr: corrParts.join(" ").replace(/\s+/g," ").trim(),
+    grammar: gramParts.slice(0,4).join("\n• "),
+    vocab:   vocabParts.slice(0,4).join("\n• "),
+    // đoán thì & cấu trúc dựa trên toàn câu của bạn
+    tense:     guessTense(en),
+    structure: guessStructure(en)
+  };
+}
 // ===== Buttons: Practice =====
 $("#btnUseManual").onclick=()=>{
   const raw=($("#manualVI").value||"").trim();
@@ -352,38 +441,46 @@ $("#btnTranslateNow").onclick=async()=>{
   }catch(e){$("#hint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
 
-$("#btnGradeSimple").onclick=async()=>{
-  const vi=items[idx],en=($("#answer").value||"").trim();
-  if(!en){$("#hint").textContent="Bạn chưa nhập bản dịch.";return}
-  try{
-    setBusy(true);$("#hint").textContent="Đang chấm...";
-    const r=await gradeSimpleSmart(vi,en);
-    $("#gradeHeader").innerHTML=`<b>Điểm (Simple): ${Math.round(r.score)}</b> — ${esc(r.explain||"")}`;
-    $("#gradeDiff").className="diff mono scrollBox simple";
-    $("#gradeDiff").innerHTML=diffCompact(en,r.corr);
-    $("#gradeBreakdown").innerHTML="";
-    $("#hint").textContent="";
-    addHistory({type:"simple",input:vi,score:r.score,band:null,ok:r.score>=90});
-  }catch(e){
-    $("#gradeHeader").textContent="Lỗi: "+e;
-    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML="";
-  }finally{setBusy(false)}
-};
+// ==== Chấm nhanh (Simple) – hiển thị Grammar / Vocabulary / Thì & Cấu trúc ====
+$("#btnGradeSimple").onclick = async () => {
+  const vi = items[idx], en = ($("#answer").value||"").trim();
+  if(!en){ $("#hint").textContent="Bạn chưa nhập bản dịch."; return; }
 
-$("#btnGradeIELTS").onclick=async()=>{
-  const vi=items[idx],en=($("#answer").value||"").trim();
-  if(!en){$("#hint").textContent="Bạn chưa nhập bản dịch.";return}
   try{
-    setBusy(true);$("#hint").textContent="Đang chấm IELTS...";
-    const r=parseJSON(await callOpenAI(IELTS_PROMPT,`VI: ${vi}\nEN: ${en}`,900));
-    if(!r||!r.criteria)throw"Lỗi";
-    showGradingResult(en,r,$("#gradeHeader"),$("#gradeDiff"),$("#gradeBreakdown"),"IELTS Overall","spoken");
-    addHistory({type:"ielts",input:vi,score:r.overall_score,band:bandFromScore(r.overall_score),ok:false});
+    setBusy(true); $("#hint").textContent="Đang chấm...";
+    const r = await gradeSimpleSmart(vi, en);
+
+    // Header + diff
+    $("#gradeHeader").innerHTML =
+      `<b>Điểm (Simple): ${Math.round(r.score)}</b> — ${esc(r.explain||"")}`;
+    $("#gradeDiff").className = "diff mono scrollBox simple";
+    $("#gradeDiff").innerHTML = diffCompact(en, r.corr);
+
+    // 4 box: Grammar, Vocab, Thì, Cấu trúc
+    $("#gradeBreakdown").innerHTML = `
+      <div class="card row"><b>Grammar</b>
+        <div class="subtle" style="white-space:pre-wrap">${esc(r.grammar||"—")}</div>
+      </div>
+      <div class="card row"><b>Vocabulary</b>
+        <div class="subtle" style="white-space:pre-wrap">${esc(r.vocab||"—")}</div>
+      </div>
+      <div class="card row"><b>Thì đang dùng</b>
+        <div class="subtle">${esc(r.tense?.name||"—")} — ${esc(r.tense?.explain||"")}</div>
+      </div>
+      <div class="card row"><b>Cấu trúc/ngữ pháp chính</b>
+        <div class="subtle">${esc(r.structure?.name||"—")} — ${esc(r.structure?.explain||"")}</div>
+      </div>
+    `;
+
     $("#hint").textContent="";
+    addHistory({type:"simple", input:vi, score:r.score, band:null, ok:r.score>=90});
   }catch(e){
-    $("#gradeHeader").textContent="Lỗi: "+e;
-    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML="";
-  }finally{setBusy(false)}
+    $("#gradeHeader").textContent = "Lỗi: " + e;
+    $("#gradeDiff").innerHTML = "";
+    $("#gradeBreakdown").innerHTML = "";
+  }finally{
+    setBusy(false);
+  }
 };
 // ===== Generate Sentences (VI) =====
 $("#btnGSGen").onclick=async()=>{
