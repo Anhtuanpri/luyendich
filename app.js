@@ -122,28 +122,40 @@ function setBusy(on){
 }
 
 // ===== OpenAI/Proxy Call =====
-async function callOpenAI(sys,usr,max_tokens=900){
-  let url,headers,model;
-  if(store.key){ // Dùng key của bạn
-    url=store.ep||"https://api.openai.com/v1/chat/completions";
-    headers={"Authorization":"Bearer "+store.key,"Content-Type":"application/json"};
-    model=store.mdl||"gpt-4o-mini";
-  }else{        // Không có key → qua Worker proxy
-    url=ADMIN_PROXY;
-    headers={"Content-Type":"application/json"};
-    model=store.mdl||"gpt-4o-mini";
+async function callOpenAI(sys, usr, max_tokens = 900) {
+  let url, headers, model;
+
+  if (store.key) { // Có API key cá nhân -> gọi thẳng OpenAI
+    url = (store.ep || "https://api.openai.com/v1/chat/completions").replace(/\/+$/,'');
+    url += "/v1/chat/completions".replace("/v1/chat/completions",""); // đảm bảo đúng endpoint nếu ep đã đủ
+    headers = { "Authorization": "Bearer " + store.key, "Content-Type": "application/json" };
+    model = store.mdl || "gpt-4o-mini";
+  } else {         // Không có key -> đi qua Worker proxy
+    const base = ADMIN_PROXY.replace(/\/+$/,'');       // xoá dấu / thừa cuối URL
+    url = base + "/v1/chat/completions";               // ✨ BẮT BUỘC: thêm endpoint
+    headers = { "Content-Type": "application/json" };
+    model = store.mdl || "gpt-4o-mini";
   }
-  const body={
+
+  const body = {
     model,
-    temperature:0.2,
+    temperature: 0.2,
     max_tokens,
-    messages:[{role:"system",content:sys},{role:"user",content:usr}]
+    messages: [
+      { role: "system", content: sys },
+      { role: "user",   content: usr }
+    ]
   };
-  const r=await fetch(url,{method:"POST",headers,body:JSON.stringify(body)});
-  if(!r.ok) throw new Error(await r.text());
-  const d=await r.json();
-  // Chuẩn OpenAI
-  return d.choices?.[0]?.message?.content||"";
+
+  const r = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+
+  // đọc text để báo lỗi rõ ràng
+  const txt = await r.text();
+  let data;
+  try { data = JSON.parse(txt); } catch { throw new Error(txt || `HTTP ${r.status}`); }
+  if (!r.ok) throw new Error(data.error?.message || data.message || `HTTP ${r.status}`);
+
+  return data.choices?.[0]?.message?.content || "";
 }
 
 // ===== Diff & Metrics =====
