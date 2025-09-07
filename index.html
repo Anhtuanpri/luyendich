@@ -811,30 +811,62 @@ $('#btnGradeTranslated').onclick=async()=>{
   }catch(e){$('#trTaskHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
-/* ====== CHAT AI ====== */
+/* ====== CHAT AI (chống gửi trùng + Enter để gửi) ====== */
 function appendMsg(text, mine=false, typing=false){
-  const row=el('div','msg'+(mine?' me':'')); const b=el('div','bubble'); b.innerHTML=typing?('<span class="type">&nbsp;</span>'):esc(text); row.appendChild(b); $('#chatBox').appendChild(row); $('#chatBox').scrollTop=$('#chatBox').scrollHeight; return b;
+  const row = el('div','msg'+(mine?' me':'')); 
+  const b   = el('div','bubble');
+  b.innerHTML = typing ? '<span class="type">&nbsp;</span>' : esc(text);
+  row.appendChild(b);
+  $('#chatBox').appendChild(row);
+  $('#chatBox').scrollTop = $('#chatBox').scrollHeight;
+  return b;
 }
 async function typeOut(elm, text, speed=12){
-  elm.innerHTML=''; let i=0; return new Promise(res=>{const id=setInterval(()=>{elm.textContent+=text[i++]||''; $('#chatBox').scrollTop=$('#chatBox').scrollHeight; if(i>=text.length){clearInterval(id); res();}}, speed);});
+  elm.innerHTML=''; let i=0;
+  return new Promise(res=>{
+    const id=setInterval(()=>{
+      elm.textContent += text[i++]||'';
+      $('#chatBox').scrollTop = $('#chatBox').scrollHeight;
+      if(i>=text.length){ clearInterval(id); res(); }
+    }, speed);
+  });
 }
-$('#btnAsk').onclick=async()=>{
-  const q=($('#askInput').value||'').trim(); if(!q){$('#askHint').textContent='Nhập câu hỏi.';return;}
-  $('#askHint').textContent=''; appendMsg(q,true);
-  const bubble=appendMsg('',false,true);
+
+let chatLock = false;  // khóa chống gửi trùng
+
+async function sendAsk(){
+  if (chatLock) return;                // đang gửi → bỏ qua
+  const q = ($('#askInput').value||'').trim();
+  if (!q) { $('#askHint').textContent='Nhập câu hỏi.'; return; }
+  chatLock = true;
+  $('#askHint').textContent='';
+  appendMsg(q, true);
+  const bubble = appendMsg('', false, true);
   try{
-    const sys=`Bạn là trợ lý tiếng Anh hữu ích. Giải thích ngắn gọn, có ví dụ; nếu người dùng đưa câu, hãy sửa và nêu lý do. Dùng tiếng Việt khi giải thích, ví dụ bằng EN.`;
-    const ans=await callOpenAI(sys,q,650);
-    await typeOut(bubble,ans.replace(/^```[\s\S]*?```/g,''),10);
-  }catch(e){bubble.textContent='Lỗi: '+e;}
-};
-// Enter để gửi trong Chat AI
-$('#askInput').addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !e.shiftKey){
-    e.preventDefault();
-    $('#btnAsk').click();
+    const sys = `Bạn là trợ lý tiếng Anh hữu ích. Giải thích ngắn gọn, có ví dụ; nếu người dùng đưa câu, hãy sửa và nêu lý do. Dùng tiếng Việt khi giải thích, ví dụ bằng EN.`;
+    const ans = await callOpenAI(sys, q, 650);
+    await typeOut(bubble, ans.replace(/^```[\s\S]*?```/g,''), 10);
+  }catch(e){
+    bubble.textContent = 'Lỗi: ' + e;
+  }finally{
+    chatLock = false;
   }
-});
+}
+
+// Click nút Gửi
+$('#btnAsk').onclick = sendAsk;
+
+// Enter để gửi (không Shift+Enter). Chặn lặp/phím giữ/IME.
+const askI = $('#askInput');
+if (askI && !askI.dataset.enterBound){
+  askI.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !e.repeat){
+      e.preventDefault();
+      sendAsk();
+    }
+  });
+  askI.dataset.enterBound = '1'; // tránh bind nhiều lần
+}
 /* ====== DICTIONARY (nhiều nghĩa) ====== */
 function renderHistDict(){
   const hist=store.dict.slice(-14).reverse();
@@ -1122,6 +1154,14 @@ window.addEventListener('DOMContentLoaded', function adminAnnouncement(){
     };
   }
 })();
+</script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.documentElement.style.overflowY = "auto";
+  document.documentElement.style.height = "auto";
+  document.body.style.overflowY = "auto";
+  document.body.style.height = "auto";
+});
 </script>
 </body>
 </html>
