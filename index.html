@@ -35,23 +35,22 @@ textarea{min-height:110px;resize:vertical}
 .kv{display:grid;grid-template-columns:140px 1fr;gap:6px;align-items:flex-start}
 .boxVI{padding:14px;border:1px dashed #d9e1f3;border-radius:12px;background:#fbfdff}
 .boxVI.limit10{line-height:var(--lh);max-height:calc(var(--lh) * 10);overflow:auto}
-:root.dark .boxVI{background:#111317;border-color:#2a2f37}
+:root.dark .boxVI{background:#111317}
 .errtag{display:inline-block;margin:4px 6px 0 0;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#f7f9ff}
 :root.dark .errtag{background:#141826}
 .table{width:100%;border-collapse:collapse}.table th,.table td{padding:8px;border-bottom:1px solid var(--line)}
 
-/* ==== DIFF HIGHLIGHT (đã sửa) ==== */
-/* Mode chung */
+/* ==== DIFF HIGHLIGHT ==== */
+/* SIMPLE (câu ngắn): gạch đỏ phần sai, xanh phần đúng */
 .diff{line-height:1.75}
-/* SIMPLE: luyện dịch câu ngắn – đỏ/xanh + gạch dòng phần sai */
 .diff.simple .del{background:rgba(224,49,49,.16);color:#e03131;text-decoration:line-through;border-radius:4px;padding:1px 2px}
 .diff.simple .ins{background:rgba(14,173,105,.16);color:#0ead69;border-radius:4px;padding:1px 2px}
 .diff.simple .ellipsis{color:var(--muted)}
-/* WRITING/SPOKEN: 3 màu – KHÔNG gạch, theo band */
+/* WRITING/SPOKEN: 3 màu – không gạch */
 .diff.writing span{border-radius:4px;padding:1px 2px}
-.diff.writing .bad{background:rgba(250,82,82,.18);color:#e03131}      /* <5.0 */
-.diff.writing .near{background:rgba(245,157,0,.22);color:#9a6b00}    /* 5.0–6.5 */
-.diff.writing .good{background:rgba(18,184,134,.18);color:#0ead69}   /* 7.0–9.0 */
+.diff.writing .bad{background:rgba(250,82,82,.18);color:#e03131}
+.diff.writing .near{background:rgba(245,157,0,.22);color:#9a6b00}
+.diff.writing .good{background:rgba(18,184,134,.18);color:#0ead69}
 
 /* Drawer/Profile */
 .drawer{position:fixed;inset:0 0 0 auto;width:min(420px,92vw);background:var(--panel);border-left:1px solid var(--line);box-shadow:var(--soft);transform:translateX(105%);transition:.25s;z-index:60;padding:16px}
@@ -61,7 +60,7 @@ textarea{min-height:110px;resize:vertical}
 .stat{display:flex;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfdff}
 :root.dark .stat{background:#111317}
 
-/* Footer cố định + đo chiều cao thật */
+/* Footer cố định */
 .footerNav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.78);backdrop-filter:blur(10px);border-top:1px solid var(--line);z-index:50}
 :root.dark .footerNav{background:rgba(20,22,27,.65)}
 .wrapNav{width:min(1200px,94vw);margin:0 auto;padding:12px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -75,8 +74,6 @@ textarea{min-height:110px;resize:vertical}
 :root.dark .me .bubble{background:#141b2b}
 .type{border-right:2px solid var(--ink);animation:caret 1s steps(1) infinite}
 @keyframes caret{50%{border-color:transparent}}
-
-/* Khu kết quả dài có scroll riêng */
 .scrollBox{max-height:260px;overflow:auto}
 </style>
 </head>
@@ -438,7 +435,7 @@ const root=document.documentElement;const prefersDark=matchMedia('(prefers-color
 if(localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&prefersDark)){root.classList.add('dark');$('#toggleTheme').textContent='🌙';}
 $('#toggleTheme').onclick=()=>{root.classList.toggle('dark');const d=root.classList.contains('dark');localStorage.setItem('theme',d?'dark':'light');$('#toggleTheme').textContent=d?'🌙':'🌤️';};
 
-/* ====== FOOTER HEIGHT AUTO (fix che nội dung/nút) ====== */
+/* ====== FOOTER HEIGHT AUTO ====== */
 function applyFooterPadding(){
   const f=$('#footerNav'); if(!f) return;
   const h=f.offsetHeight||78;
@@ -464,7 +461,10 @@ function renderPractice(){
   const total=items.length||1; idx=clamp(idx,0,total-1);
   $('#viBox').textContent=items[idx]||'—'; $('#answer').value='';
   $('#gIdea').textContent='—'; $('#gVocab').textContent='—'; $('#gGrammar').textContent='—';
-  $('#gradeHeader').textContent='Chưa chấm.'; $('#gradeDiff').innerHTML=''; $('#gradeBreakdown').innerHTML='';
+  $('#gradeHeader').textContent='Chưa chấm.';
+  $('#gradeDiff').innerHTML='';
+  $('#gradeDiff').className='diff mono scrollBox simple'; // <-- FIX simple diff
+  $('#gradeBreakdown').innerHTML='';
   $('#counter').textContent=`Câu ${idx+1}/${total}`; $('#progbar').style.width=`${Math.round(((idx+1)/total)*100)}%`;
   store.items=items; store.idx=idx;
 }
@@ -511,8 +511,8 @@ function diffWriting(userText, revisionText, severity='near'){
   const mark=t => (t.trim()==='') ? esc(t) : `<span class="${severity}">${esc(t)}</span>`;
   while(i<m && j<n){
     if(A[i]===B[j]){ buf.push(esc(B[j])); i++; j++; }
-    else if(dp[i+1][j]>=dp[i][j+1]){ i++; } // bỏ token cũ
-    else{ buf.push(mark(B[j])); j++; }      // token mới/sửa -> tô màu
+    else if(dp[i+1][j]>=dp[i][j+1]){ i++; }
+    else{ buf.push(mark(B[j])); j++; }
   }
   while(j<n){ buf.push(mark(B[j++])); }
   return buf.join('');
@@ -690,6 +690,7 @@ $('#btnGradeSimple').onclick=async()=>{
     setBusy(true);$('#hint').textContent='Đang chấm (10–100)...';
     const r=await gradeSimpleSmart(vi,en);
     $('#gradeHeader').innerHTML=`<b>Điểm (Simple): ${Math.round(r.score)}</b> — ${esc(r.explain||'')}`;
+    $('#gradeDiff').className='diff mono scrollBox simple'; // <-- FIX simple diff
     $('#gradeDiff').innerHTML=diffCompact(en,r.corr);
     $('#gradeBreakdown').innerHTML='';
     $('#hint').textContent='';
@@ -810,7 +811,7 @@ $('#btnGradeTranslated').onclick=async()=>{
   }catch(e){$('#trTaskHint').textContent='Lỗi: '+e;}finally{setBusy(false);}
 };
 
-/* ====== CHAT AI (gõ từng chữ) ====== */
+/* ====== CHAT AI ====== */
 function appendMsg(text, mine=false, typing=false){
   const row=el('div','msg'+(mine?' me':'')); const b=el('div','bubble'); b.innerHTML=typing?('<span class="type">&nbsp;</span>'):esc(text); row.appendChild(b); $('#chatBox').appendChild(row); $('#chatBox').scrollTop=$('#chatBox').scrollHeight; return b;
 }
@@ -827,10 +828,22 @@ $('#btnAsk').onclick=async()=>{
     await typeOut(bubble,ans.replace(/^```[\s\S]*?```/g,''),10);
   }catch(e){bubble.textContent='Lỗi: '+e;}
 };
-
+// Enter để gửi trong Chat AI
+$('#askInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    $('#btnAsk').click();
+  }
+});
 /* ====== DICTIONARY (nhiều nghĩa) ====== */
-function renderHistDict(){const hist=store.dict.slice(-14).reverse(); $('#dictHistory').innerHTML= hist.length?hist.map(w=>`<span class="errtag">${esc(w)}</span>`).join(''):'Chưa có.';}
+function renderHistDict(){
+  const hist=store.dict.slice(-14).reverse();
+  $('#dictHistory').innerHTML = hist.length
+    ? hist.map(w=>`<span class="errtag">${esc(w)}</span>`).join('')
+    : 'Chưa có.';
+}
 renderHistDict();
+
 async function dictAPI(q){
   const sys=`Bạn là từ điển EN⇄VI chuẩn. Trả JSON:
 {"headword":"","ipa_uk":"","ipa_us":"","pos":[""],"senses":[
@@ -841,14 +854,70 @@ Gợi ý 3–6 nghĩa nếu có; ví dụ tự nhiên.`;
   const out=await callOpenAI(sys,'Lookup: '+q,900);
   return parseJSON(out);
 }
+
 function showDict(d){
   const box=$('#dictOut'); box.innerHTML='';
-  if(!d){box.innerHTML='<div class="mono">Không có dữ liệu.</div>';return;}
+  if(!d){ box.innerHTML='<div class="mono">Không có dữ liệu.</div>'; return; }
   box.append(el('div','',`<h2 class="sectionTitle" style="margin:0">${esc(d.headword)} <span class="subtle">(${(d.pos||[]).join(', ')})</span></h2>`));
   box.append(el('div','subtle',`IPA UK: /${esc(d.ipa_uk||'-')}/ • IPA US: /${esc(d.ipa_us||'-')}/`));
-  (d.senses||[]).forEach((s,i)=> box.append(el('div','card row',`<b>${i+1}. ${esc(s.label||s.gloss_en||'')}</b><div>${esc(s.gloss_en||'')}</div><div class="subtle">${esc(s.gloss_vi||'')}</div>${(s.examples||[]).map(e=>`<div class="mono">• ${esc(e.en)} — <span class="subtle">${esc(e.vi||'')}</span></div>`).join('')}`)));
-  if(Array.isArray(d.phrases)&&d.phrases.length){ box.append(el('div','card row',`<b>Phrasal/Collocation</b>${d.phrases.map(p=>`<div class="mono">• <b>${esc(p.phrasal)}</b> — ${esc(p.gloss_vi)}<br><span class="subtle">${esc(p.example_en)}</span> — ${esc(p.example_vi||'')}</div>`).join('')}`));}
+  (d.senses||[]).forEach((s,i)=> box.append(el('div','card row',`
+    <b>${i+1}. ${esc(s.label||s.gloss_en||'')}</b>
+    <div>${esc(s.gloss_en||'')}</div>
+    <div class="subtle">${esc(s.gloss_vi||'')}</div>
+    ${(s.examples||[]).map(e=>`<div class="mono">• ${esc(e.en)} — <span class="subtle">${esc(e.vi||'')}</span></div>`).join('')}
+  `)));
+  if(Array.isArray(d.phrases)&&d.phrases.length){
+    box.append(el('div','card row',`
+      <b>Phrasal/Collocation</b>
+      ${d.phrases.map(p=>`<div class="mono">• <b>${esc(p.phrasal)}</b> — ${esc(p.gloss_vi)}<br><span class="subtle">${esc(p.example_en)}</span> — ${esc(p.example_vi||'')}</div>`).join('')}
+    `));
+  }
 }
+
+// === GẮN SỰ KIỆN ===
+$('#btnLookup').onclick = async () => {
+  const q = ($('#q').value||'').trim();
+  if(!q){ $('#dictHint').textContent='Nhập từ/cụm cần tra.'; return; }
+  try{
+    setBusy(true);
+    $('#dictHint').textContent='Đang tra...';
+    const data = await dictAPI(q);
+    showDict(data);
+    // lưu lịch sử (tối đa 50)
+    const hist = store.dict; hist.push(q);
+    store.dict = hist.slice(-50);
+    renderHistDict();
+    $('#dictHint').textContent='';
+  }catch(e){
+    $('#dictOut').innerHTML='<div class="mono">Lỗi: '+esc(e+'')+'</div>';
+    $('#dictHint').textContent='';
+  }finally{ setBusy(false); }
+};
+
+// Gợi ý từ cần tra dựa trên câu VI hiện hành
+$('#btnLookupFromVI').onclick = async () => {
+  const vi = (items[idx]||'').trim();
+  if(!vi){ $('#dictHint').textContent='Chưa có câu để gợi ý.'; return; }
+  try{
+    setBusy(true);
+    $('#dictHint').textContent='Đang gợi ý...';
+    const sys = `Từ câu tiếng Việt sau, gợi ý 1–3 từ/cụm TIẾNG ANH nên tra (thường là key collocation/verb/idiom). Trả JSON {"candidates":["..."]}`;
+    const js = parseJSON(await callOpenAI(sys, vi, 200));
+    const cand = js?.candidates?.[0] || '';
+    if(!cand){ $('#dictHint').textContent='Không gợi ý được.'; setBusy(false); return; }
+    $('#q').value = cand;
+    $('#dictHint').textContent='Đang tra '+cand+'...';
+    const data = await dictAPI(cand);
+    showDict(data);
+    const hist = store.dict; hist.push(cand);
+    store.dict = hist.slice(-50);
+    renderHistDict();
+    $('#dictHint').textContent='';
+  }catch(e){
+    $('#dictOut').innerHTML='<div class="mono">Lỗi: '+esc(e+'')+'</div>';
+    $('#dictHint').textContent='';
+  }finally{ setBusy(false); }
+};
 
 /* ====== HISTORY / PROFILE ====== */
 function addHistory({type,input,score,band,ok}){const at=store.attempts; at.push({at:Date.now(),type,input,score,band,ok}); store.attempts=at; }
@@ -883,9 +952,9 @@ window.ANNOUNCE_CONTENT = window.ANNOUNCE_CONTENT ?? {
     '• Sửa highlight theo band, 3 màu cho Writing\n' +
     '• Fix chấm 10–100 cho bài dài (chia đoạn)\n' +
     '• Tách “Văn nói” và “Văn IELTS” đúng mục\n' +
-    '• Footer auto-fit, nút ổn định hơn',
-  linkText: 'LIÊN HỆ ADMIN NẾU THẤY LỖI',
-  linkUrl: 'https://www.facebook.com/share/19ZVmfWYAS/?mibextid=wwXIfr'
+    '<span style="color:#e03131;font-weight:800;font-size:1.8em">🔥 Cập nhật thêm: Footer auto-fit & nút ổn định hơn</span>',
+  linkText: 'Liên hệ ADMIN báo lỗi',
+  linkUrl: 'https://www.facebook.com/share/1AYJ5ZGxK6/?mibextid=wwXIfr'
 };
 
 /* ========= POPUP THÔNG BÁO (ẩn 24h) ========= */
