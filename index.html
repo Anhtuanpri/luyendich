@@ -952,7 +952,7 @@ window.ANNOUNCE_CONTENT = window.ANNOUNCE_CONTENT ?? {
     '• Sửa highlight theo band, 3 màu cho Writing\n' +
     '• Fix chấm 10–100 cho bài dài (chia đoạn)\n' +
     '• Tách “Văn nói” và “Văn IELTS” đúng mục\n' +
-    '! 🔥 Cập nhật thêm: Tiếng Hàn - Trung - Nhật & Cập Nhật thêm chấm điểm Speaking cho 4 ngôn ngữ Bằng AI',
+    '! 🔥 Cập nhật thêm: Tiếng Hàn - Trung - Nhật & Cập Nhật thêm chấm điểm Speaking(Nói) AI cho 4 ngôn ngữ - Chi tiết trong cài đặt',
   linkText: 'Liên hệ ADMIN để báo lỗi',
   linkUrl: 'https://www.facebook.com/share/1AYJ5ZGxK6/?mibextid=wwXIfr'
 };
@@ -1070,6 +1070,58 @@ window.addEventListener('DOMContentLoaded', function adminAnnouncement(){
     document.body.appendChild(bg); document.body.appendChild(box);
   } catch(_) {}
 });
+</script>
+  <script>
+/* ========= CHẶN DEVTOOLS / F12 ========= */
+(function hardBlockDevTools(){
+  function toast(msg){
+    const t = document.createElement('div');
+    Object.assign(t.style,{
+      position:'fixed', top:'20px', left:'50%', transform:'translateX(-50%)',
+      background:'rgba(224,49,49,.95)', color:'#fff', fontSize:'14px', fontWeight:'700',
+      padding:'10px 14px', borderRadius:'10px', boxShadow:'0 6px 20px rgba(0,0,0,.3)', zIndex: 99999
+    });
+    t.textContent = msg; document.body.appendChild(t);
+    setTimeout(()=>t.remove(), 2500);
+  }
+
+  // Chặn phím tắt phổ biến
+  document.addEventListener('keydown',function(e){
+    const key = e.key || '';
+    if (e.keyCode===123 || // F12
+        (e.ctrlKey && e.shiftKey && (key==='I'||key==='J'||key==='C'||key==='i'||key==='j'||key==='c')) ||
+        (e.ctrlKey && (key==='U'||key==='u')) ) {
+      e.preventDefault();
+      toast('⚠️ DevTools đã bị chặn');
+      return false;
+    }
+  }, {capture:true});
+
+  // Chặn menu chuột phải
+  document.addEventListener('contextmenu',function(e){
+    e.preventDefault();
+    toast('⚠️ Chuột phải đã bị vô hiệu hoá');
+    return false;
+  }, {capture:true});
+
+  // Phát hiện mở DevTools bằng trick timing
+  setInterval(function(){
+    const t = Date.now();
+    debugger; // nếu DevTools đang mở, sẽ delay
+    if (Date.now() - t > 200){
+      toast('⚠️ Phát hiện DevTools đang mở');
+      // location.href = 'about:blank'; // ← nếu muốn thoát trang thì bỏ comment dòng này
+    }
+  }, 1000);
+
+  // Ẩn log console
+  if (window.console && typeof window.console.log === 'function'){
+    const origLog = console.log;
+    console.log = function(){
+      return origLog.apply(this, ['%c','color:transparent;',...arguments]);
+    };
+  }
+})();
 </script>
 </body>
 </html>
