@@ -412,5 +412,156 @@
   window.addEventListener("load", showPopup);
 })();
 </script>
+  <!-- ========= CHAT BOX HOÀN CHỈNH ========= -->
+<div id="chat-widget" style="position:fixed;z-index:9999;display:none;">
+  <button id="chat-toggle"
+    style="background:#0a7cff;color:#fff;border:none;padding:10px 14px;border-radius:999px;
+           cursor:pointer;font-family:sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25);">
+    💬 Hỗ trợ
+  </button>
+
+  <div id="chat-box" style="display:none;position:absolute;top:42px;right:0;width:340px;height:460px;
+       background:#fff;border:1px solid #ccc;border-radius:14px;box-shadow:0 16px 50px rgba(0,0,0,.35);overflow:hidden;">
+    <div id="chat-header" style="background:#0a7cff;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:bold;">
+      <span>Chat Hỗ Trợ</span>
+      <div>
+        <button id="chat-clear" style="background:transparent;color:#fff;border:none;cursor:pointer;"></button>
+        <button id="chat-close" style="background:transparent;color:#fff;border:none;cursor:pointer;">✖</button>
+      </div>
+    </div>
+
+    <div id="chat-messages" style="height:calc(100% - 112px);padding:12px;overflow:auto;background:#f6f8fa;"></div>
+
+    <div style="position:absolute;left:0;right:0;bottom:0;display:flex;gap:6px;padding:8px;border-top:1px solid #ddd;background:#fff;">
+      <input id="chat-file" type="file" accept="image/*" hidden>
+      <button id="img-btn" style="border:1px solid #ccc;background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer;">📷</button>
+      <input id="chat-text" type="text" placeholder="Nhập tin nhắn..."
+             style="flex:1;border:1px solid #ccc;border-radius:8px;padding:8px 10px;">
+      <button id="send-btn" style="background:#0a7cff;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;">Gửi</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .msg-row{display:flex;gap:8px;margin:10px 0;align-items:flex-end;}
+  .msg-row.you{justify-content:flex-start;}
+  .msg-row.me{justify-content:flex-end;}
+  .msg-bubble{position:relative;max-width:75%;padding:10px 12px;border-radius:14px;
+              box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:left;}
+  .msg-row.me .msg-bubble{background:#0a7cff;color:#fff;border-bottom-right-radius:6px;margin-right:6px;}
+  .msg-row.you .msg-bubble{background:#fff;color:#111;border:1px solid #ddd;border-bottom-left-radius:6px;margin-left:6px;}
+  .msg-img{max-width:100%;border-radius:10px;display:block}
+  .react-bar{display:flex;align-items:center;gap:8px;margin-top:6px;}
+  .react-summary{font-size:12px;opacity:.85}
+  .react-btn{border:none;background:transparent;cursor:pointer;font-size:14px;padding:3px 6px;border-radius:8px}
+  .react-btn:hover{background:#f1f5ff}
+  /* Picker nổi toàn cục */
+  #tt-picker{position:fixed;display:none;z-index:2147483647;
+             background:#fff;border:1px solid #ccc;border-radius:10px;
+             box-shadow:0 10px 30px rgba(0,0,0,.25);padding:6px;}
+  #tt-picker button{border:none;background:transparent;cursor:pointer;font-size:18px;padding:6px 8px;border-radius:8px;}
+  #tt-picker button:hover{background:#f1f5ff}
+</style>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, onChildAdded, onChildChanged, runTransaction, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgTSTsGQaeGT9eaQCoCF6m58MBsdbHz-0",
+    authDomain: "phan1-f7af4.firebaseapp.com",
+    databaseURL: "https://phan1-f7af4-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "phan1-f7af4",
+    storageBucket: "phan1-f7af4.appspot.com",
+    messagingSenderId: "673326593732",
+    appId: "1:673326593732:web:c7dd17ff2036264d25bb91",
+    measurementId: "G-6WY24EN28R"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const MESSAGES   = ref(db, "messages");
+  const SEVEN_DAYS = 7*24*60*60*1000;
+
+  const widget=document.getElementById('chat-widget'),
+        toggle=document.getElementById('chat-toggle'),
+        box=document.getElementById('chat-box'),
+        close=document.getElementById('chat-close'),
+        clearBtn=document.getElementById('chat-clear'),
+        msgs=document.getElementById('chat-messages'),
+        input=document.getElementById('chat-text'),
+        send=document.getElementById('send-btn'),
+        imgBtn=document.getElementById('img-btn'),
+        file=document.getElementById('chat-file');
+
+  // bám tiêu đề
+  const title=document.querySelector('h1')||document.querySelector('.page-title')||document.querySelector('[data-title]');
+  function place(){
+    if(!title){ widget.style.display='block'; widget.style.bottom='20px'; widget.style.right='20px'; return; }
+    widget.style.display='block';
+    const r=title.getBoundingClientRect(), sx=window.scrollX||0, sy=window.scrollY||0;
+    widget.style.left=(r.right+sx+8)+'px'; widget.style.top=(r.top+sy-4)+'px';
+    widget.style.right=''; widget.style.bottom='';
+  }
+  place(); window.addEventListener('scroll',place,{passive:true}); window.addEventListener('resize',place);
+  if('ResizeObserver' in window){ new ResizeObserver(place).observe(title||document.body); }
+
+  // Mở/đóng
+  toggle.onclick=()=>{ box.style.display = box.style.display==='block' ? 'none' : 'block'; };
+  close.onclick=()=>{ box.style.display='none'; };
+  clearBtn.onclick=async()=>{ if(confirm('Xoá tất cả?')){ await remove(MESSAGES); msgs.innerHTML=''; } };
+
+  // picker toàn cục
+  const picker=document.createElement('div');
+  picker.id='tt-picker';
+  picker.innerHTML=`<button data-key="like">❤️</button><button data-key="haha">😄</button><button data-key="angry">😡</button>`;
+  document.body.appendChild(picker);
+  let pickerForMsgId=null;
+
+  // helpers
+  const esc = s => (s||'').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  function updateSummary(el, r){ const p=[]; if(r?.like) p.push('❤️ '+r.like); if(r?.haha) p.push('😄 '+r.haha); if(r?.angry) p.push('😡 '+r.angry); el.textContent=p.join('  '); }
+
+  function makeRow(key, d){
+    const row=document.createElement('div'); row.className='msg-row '+(d.type==='user'?'me':'you'); row.dataset.id=key;
+    const bubble=document.createElement('div'); bubble.className='msg-bubble';
+    if(d.img){ const im=document.createElement('img'); im.src=d.img; im.className='msg-img'; bubble.appendChild(im); }
+    else{ bubble.innerHTML=esc(d.text); }
+
+    const bar=document.createElement('div'); bar.className='react-bar';
+    const pickBtn=document.createElement('button'); pickBtn.className='react-btn'; pickBtn.textContent='🙂';
+    const sum=document.createElement('div'); sum.className='react-summary'; updateSummary(sum,d.reactions||{});
+    pickBtn.onclick=(ev)=>{ev.stopPropagation(); pickerForMsgId=key; const r=pickBtn.getBoundingClientRect();
+      picker.style.left=(r.right-picker.offsetWidth)+'px'; picker.style.top=(r.bottom+6)+'px'; picker.style.display='block';};
+    bar.appendChild(pickBtn); bar.appendChild(sum);
+    bubble.appendChild(bar); row.appendChild(bubble);
+    return row;
+  }
+
+  document.addEventListener('click',()=>{ picker.style.display='none'; });
+  picker.addEventListener('click',(e)=>{
+    const b=e.target.closest('button'); if(!b||!pickerForMsgId) return;
+    const key=b.dataset.key;
+    runTransaction(ref(db,`messages/${pickerForMsgId}/reactions/${key}`),c=>(typeof c==='number'?c:0)+1);
+    picker.style.display='none';
+  });
+
+  // gửi
+  send.onclick=()=>{ if(input.value.trim()){ push(MESSAGES,{text:input.value.trim(),img:null,type:'user',time:Date.now(),reactions:{}}); input.value=''; } };
+  input.onkeydown=e=>{ if(e.key==='Enter') send.onclick(); };
+  imgBtn.onclick=()=>file.click();
+  file.onchange=()=>{ const f=file.files[0]; if(f){ const rd=new FileReader(); rd.onload=e=>{ push(MESSAGES,{img:e.target.result,text:null,type:'user',time:Date.now(),reactions:{}}); }; rd.readAsDataURL(f); } };
+
+  // cleanup >7 ngày
+  async function cleanup(){ const s=await get(MESSAGES),now=Date.now(); s.forEach(ch=>{if(ch.val().time&&now-ch.val().time>SEVEN_DAYS) remove(ch.ref);}); }
+  cleanup();
+
+  // realtime
+  onChildAdded(MESSAGES,snap=>{ const v=snap.val(); if(v?.time&&Date.now()-v.time>SEVEN_DAYS){remove(snap.ref);return;}
+    msgs.appendChild(makeRow(snap.key,v)); msgs.scrollTop=msgs.scrollHeight; });
+  onChildChanged(MESSAGES,snap=>{ const row=msgs.querySelector(`[data-id="${snap.key}"]`); if(!row) return;
+    const v=snap.val(); const sum=row.querySelector('.react-summary'); updateSummary(sum,v.reactions||{}); });
+</script>
+<!-- ========= /CHAT ========= -->
 </body>
 </html>
