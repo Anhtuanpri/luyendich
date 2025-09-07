@@ -62,6 +62,7 @@ new ResizeObserver(applyFooterPadding).observe(document.body);
 window.addEventListener("load",applyFooterPadding);
 window.addEventListener("resize",applyFooterPadding);
 applyFooterPadding();
+
 // ===== Tabs & state =====
 const tabs=[
   ["#tabPractice","#secPractice"],
@@ -84,7 +85,6 @@ tabs.forEach(([b,s])=>$(b).onclick=()=>{
   if(s==="#secHistory")renderHistory();
   if(s==="#secAsk")setTimeout(()=>$("#askInput").focus(),50);
 });
-
 let items=store.items.length?store.items:[
   "Chúng tôi đang xem phim ở rạp chiếu phim, phim rất hay.",
   "Họ đang xây một ngôi nhà mới, nó sẽ rất lớn.",
@@ -117,7 +117,9 @@ window.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight")$("#btnNext").click();
 });
 
-function setBusy(on){document.querySelectorAll("button").forEach(b=>b.disabled=!!on)}
+function setBusy(on){
+  document.querySelectorAll("button").forEach(b=>b.disabled=!!on)
+}
 
 // ===== OpenAI/Proxy Call =====
 async function callOpenAI(sys,usr,max_tokens=900){
@@ -143,15 +145,22 @@ async function callOpenAI(sys,usr,max_tokens=900){
   // Chuẩn OpenAI
   return d.choices?.[0]?.message?.content||"";
 }
+
 // ===== Diff & Metrics =====
-function tokenize(s){return(s||"").replace(/\s+/g," ").trim().split(/(\s+|[.,!?;:;()'"-])/).filter(x=>x!=="")}
+function tokenize(s){
+  return (s||"").replace(/\s+/g," ").trim()
+    .split(/(\s+|[.,!?;:;()'"-])/).filter(x=>x!=="")
+}
 function diffCompact(a,b,maxSameRun=28){
   const A=tokenize(a),B=tokenize(b);
   const m=A.length,n=B.length;const dp=[...Array(m+1)].map(()=>Array(n+1).fill(0));
   for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)
     dp[i][j]=A[i]===B[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
   let i=0,j=0,buf=[],sameRun=0;
-  const flushSame=()=>{if(sameRun>0){if(sameRun>maxSameRun)buf.push('<span class="ellipsis"> … </span>');else for(let k=0;k<sameRun;k++)buf.push(esc(A[i-sameRun+k]));sameRun=0}};
+  const flushSame=()=>{if(sameRun>0){
+    if(sameRun>maxSameRun)buf.push('<span class="ellipsis"> … </span>');
+    else for(let k=0;k<sameRun;k++)buf.push(esc(A[i-sameRun+k]));
+    sameRun=0}};
   while(i<m&&j<n){
     if(A[i]===B[j]){sameRun++;i++;j++;if(sameRun>maxSameRun+10){flushSame()}}
     else if(dp[i+1][j]>=dp[i][j+1]){flushSame();buf.push(`<span class="del">${esc(A[i])}</span>`);i++}
@@ -181,7 +190,6 @@ function similarity(a,b){
   const A=tok(a),B=tok(b);let inter=0;A.forEach(x=>{if(B.has(x))inter++});
   const uni=A.size+B.size-inter||1;return inter/uni
 }
-
 // ===== Prompts =====
 const SIMPLE_PROMPT=`You are a VERY STRICT English corrector for Vietnamese→English translations. Your task: always return STRICT JSON ONLY with this schema: {"score": 10-100,"explain_vi": "ngắn gọn bằng tiếng Việt","correction": "English corrected sentence (always natural & grammatically correct)"}`;
 const SIMPLE_PROMPT_LONG=`You are a VERY STRICT English corrector for Vietnamese→English translation of a long text. Your task: always return STRICT JSON ONLY with this schema: {"score": 10-100,"explain_vi": "ngắn gọn bằng tiếng Việt","correction": "English corrected paragraph (always natural & grammatically correct)"}`;
@@ -189,7 +197,11 @@ const IELTS_PROMPT=`You are a VERY STRICT IELTS-style grader for short English o
 const IELTS_WR_SYS=`You are a STRICT IELTS Writing examiner for Task 1/Task 2. Return STRICT JSON ONLY:{"overall_score":0-100,"criteria":{"grammar":{"score":0-25,"explain_vi":"...","suggest":"..."},"vocabulary":{"score":0-25,"explain_vi":"...","suggest":"..."},"coherence":{"score":0-25,"explain_vi":"...","suggest":"..."},"task":{"score":0-25,"explain_vi":"...","suggest":"..."}},"errors":[{"type":"...","from":"…","to":"…","explain_vi":"…"}],"suggest_revision":"..."}`;
 
 // ===== Grading utils =====
-function bandFromScore(s){if(s>=95)return 9;if(s>=85)return 8;if(s>=75)return 7;if(s>=65)return 6;if(s>=55)return 5;if(s>=45)return 4;if(s>=35)return 3;if(s>=25)return 2;return 1}
+function bandFromScore(s){
+  if(s>=95)return 9;if(s>=85)return 8;if(s>=75)return 7;if(s>=65)return 6;
+  if(s>=55)return 5;if(s>=45)return 4;if(s>=35)return 3;if(s>=25)return 2;
+  return 1
+}
 function metrics(text){
   const t=(text||"").replace(/\s+/g," ").trim();
   const words=(t.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g)||[]);
@@ -250,29 +262,28 @@ function showGradingResult(userText,js,headEl,diffEl,breakdownEl,label,mode){
     ${Array.isArray(js.errors)&&js.errors.length?`<div class="card row"><b>Lỗi</b><div>${js.errors.map(e=>`<span class="errtag mono">[${esc(e.type)}] "${esc(e.from)}" → "${esc(e.to)}" — ${esc(e.explain_vi)}</span>`).join("")}</div></div>`:""}
   `;
 }
-
 // ===== Simple/IELTS graders =====
 function splitBySentences(text){
   const s=(text||"").trim().replace(/\s+/g," ");
-  return s.length?s.split(/(?<=[.!?])\s+(?=[A-Z0-9])/).filter(Boolean):[]
+  return s.length?s.split(/(?<=[.!?])\s+(?=[A-Z0-9])/).filter(Boolean):[];
 }
 function groupChunks(sents,maxWords=60,maxSents=3){
   const groups=[];let cur=[];let wc=0;
   for(const s of sents){
     const w=(s.match(/[A-Za-z]+/g)||[]).length;
     if(cur.length&&(wc+w>maxWords||cur.length>=maxSents)){
-      groups.push(cur.join(" "));cur=[s];wc=w
+      groups.push(cur.join(" "));cur=[s];wc=w;
     }else{cur.push(s);wc+=w}
   }
   if(cur.length)groups.push(cur.join(" "));
-  return groups
+  return groups;
 }
 async function gradeSimpleSmart(vi,en){
   const words=(en.match(/[A-Za-z]+/g)||[]).length;
   if(words<=40){
     const r=parseJSON(await callOpenAI(SIMPLE_PROMPT,`VI: ${vi}\nEN: ${en}`,500));
     if(!r||typeof r.score!=="number"||!r.correction)throw"Bad result";
-    return{score:r.score,explain:r.explain_vi||"",corr:r.correction}
+    return{score:r.score,explain:r.explain_vi||"",corr:r.correction};
   }
   const sents=splitBySentences(en);
   const chunks=groupChunks(sents,80,3).slice(0,6);
@@ -284,13 +295,13 @@ async function gradeSimpleSmart(vi,en){
     if(!r||typeof r.score!=="number"||!r.correction)continue;
     totalScore+=r.score*len;totalLen+=len;
     allExplain.push(r.explain_vi||"");
-    corrParts.push(r.correction.trim())
+    corrParts.push(r.correction.trim());
   }
   if(!totalLen)throw"Không chấm được";
   const avgScore=Math.round(totalScore/totalLen);
   const corr=corrParts.join(" ").replace(/\s+/g," ").trim();
   const explain=allExplain.filter(Boolean).slice(0,4).join(" | ");
-  return{score:avgScore,explain,corr}
+  return{score:avgScore,explain,corr};
 }
 
 // ===== Buttons: Practice =====
@@ -301,7 +312,7 @@ $("#btnUseManual").onclick=()=>{
   if(!lines.length){$("#manualHint").textContent="Không có câu hợp lệ.";return}
   items=items.concat(lines);store.items=items;idx=items.length-lines.length;
   $("#manualHint").textContent=`Đã thêm ${lines.length} câu.`;
-  setTimeout(()=>{$("#manualHint").textContent="";$("#tabPractice").click();renderPractice()},900)
+  setTimeout(()=>{$("#manualHint").textContent="";$("#tabPractice").click();renderPractice()},900);
 };
 
 $("#btnSuggest").onclick=async()=>{
@@ -315,7 +326,7 @@ $("#btnSuggest").onclick=async()=>{
     $("#gIdea").textContent=(js.idea_en||"—")+(showVI&&js.idea_vi?` — ${js.idea_vi}`:"");
     $("#gVocab").textContent=(js.vocab_en||[]).join(", ")+(showVI&&js.vocab_vi?.length?` — ${js.vocab_vi.join(", ")}`:"");
     $("#gGrammar").textContent=(js.grammar_en||[]).join("; ")+(showVI&&js.grammar_vi?.length?` — ${js.grammar_vi.join("; ")}`:"");
-    $("#hint").textContent=""
+    $("#hint").textContent="";
   }catch(e){$("#hint").textContent=e+""}finally{setBusy(false)}
 };
 
@@ -325,7 +336,7 @@ $("#btnTranslateNow").onclick=async()=>{
   try{
     setBusy(true);$("#hint").textContent="Đang dịch...";
     const en=await callOpenAI(sys,vi,250);
-    $("#answer").value=en.trim();$("#hint").textContent="Đã dịch."
+    $("#answer").value=en.trim();$("#hint").textContent="Đã dịch.";
   }catch(e){$("#hint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
 
@@ -340,10 +351,10 @@ $("#btnGradeSimple").onclick=async()=>{
     $("#gradeDiff").innerHTML=diffCompact(en,r.corr);
     $("#gradeBreakdown").innerHTML="";
     $("#hint").textContent="";
-    addHistory({type:"simple",input:vi,score:r.score,band:null,ok:r.score>=90})
+    addHistory({type:"simple",input:vi,score:r.score,band:null,ok:r.score>=90});
   }catch(e){
     $("#gradeHeader").textContent="Lỗi: "+e;
-    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML=""
+    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML="";
   }finally{setBusy(false)}
 };
 
@@ -356,10 +367,10 @@ $("#btnGradeIELTS").onclick=async()=>{
     if(!r||!r.criteria)throw"Lỗi";
     showGradingResult(en,r,$("#gradeHeader"),$("#gradeDiff"),$("#gradeBreakdown"),"IELTS Overall","spoken");
     addHistory({type:"ielts",input:vi,score:r.overall_score,band:bandFromScore(r.overall_score),ok:false});
-    $("#hint").textContent=""
+    $("#hint").textContent="";
   }catch(e){
     $("#gradeHeader").textContent="Lỗi: "+e;
-    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML=""
+    $("#gradeDiff").innerHTML="";$("#gradeBreakdown").innerHTML="";
   }finally{setBusy(false)}
 };
 // ===== Generate Sentences (VI) =====
@@ -376,16 +387,16 @@ $("#btnGSGen").onclick=async()=>{
     const js=parseJSON(await callOpenAI(sys,usr,600));
     if(!js?.sentences?.length)throw"Lỗi";
     $("#gsOut").textContent=js.sentences.join("\n");
-    $("#gsHint").textContent="Đã tạo."
+    $("#gsHint").textContent="Đã tạo.";
   }catch(e){
-    $("#gsOut").textContent="Lỗi: "+e;$("#gsHint").textContent=""
+    $("#gsOut").textContent="Lỗi: "+e;$("#gsHint").textContent="";
   }finally{setBusy(false)}
 };
 $("#btnGSUse").onclick=()=>{
   const t=$("#gsOut").textContent.trim();if(!t)return;
   const arr=t.split(/\n+/).map(s=>s.trim()).filter(Boolean);if(!arr.length)return;
   items=items.concat(arr);store.items=items;idx=items.length-arr.length;
-  renderPractice();$("#tabPractice").click()
+  renderPractice();$("#tabPractice").click();
 };
 
 // ===== Spoken essay (VI) =====
@@ -401,9 +412,9 @@ $("#btnSpGen").onclick=async()=>{
     const js=parseJSON(await callOpenAI(sys,usr,800));
     if(!js?.spoken_vi)throw"Lỗi";
     $("#spOut").textContent=js.spoken_vi.trim();
-    $("#spHint").textContent="OK"
+    $("#spHint").textContent="OK";
   }catch(e){
-    $("#spOut").textContent="Lỗi: "+e;$("#spHint").textContent=""
+    $("#spOut").textContent="Lỗi: "+e;$("#spHint").textContent="";
   }finally{setBusy(false)}
 };
 $("#btnSpUse").onclick=()=>{
@@ -411,7 +422,7 @@ $("#btnSpUse").onclick=()=>{
   if(!t){$("#spHint").textContent="Chưa có";return}
   items=items.concat([t]);store.items=items;idx=items.length-1;
   $("#spHint").textContent="Đã thêm";
-  setTimeout(()=>{$("#spHint").textContent="";$("#tabPractice").click();renderPractice()},800)
+  setTimeout(()=>{$("#spHint").textContent="";$("#tabPractice").click();renderPractice()},800);
 };
 $("#btnSpTransGrade").onclick=async()=>{
   const vi=$("#spOut").textContent.trim();
@@ -424,9 +435,10 @@ $("#btnSpTransGrade").onclick=async()=>{
     $("#tabWriting").click();
     $("#wrEssay").value=en.trim();
     showGradingResult(en,r,$("#wrHead"),$("#wrDiff"),$("#wrBreakdown"),"IELTS Overall (Spoken→EN)","spoken");
-    $("#wrResult").style.display="grid";$("#spHint").textContent=""
+    $("#wrResult").style.display="grid";$("#spHint").textContent="";
   }catch(e){$("#spHint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
+
 // ===== IELTS Gen (VI) =====
 $("#btnGenEssayVI").onclick=async()=>{
   const kind=$("#genEssayType").value, len=$("#genEssayLen").value,
@@ -437,9 +449,9 @@ $("#btnGenEssayVI").onclick=async()=>{
     const js=parseJSON(await callOpenAI(sys,"",900));
     if(!js?.essay_vi)throw"Lỗi";
     $("#ieltsGenOut").textContent=js.essay_vi.trim();
-    $("#ieltsGenHint").textContent="OK"
+    $("#ieltsGenHint").textContent="OK";
   }catch(e){
-    $("#ieltsGenOut").textContent="Lỗi: "+e;$("#ieltsGenHint").textContent=""
+    $("#ieltsGenOut").textContent="Lỗi: "+e;$("#ieltsGenHint").textContent="";
   }finally{setBusy(false)}
 };
 $("#btnIELTSUse").onclick=()=>{
@@ -447,7 +459,7 @@ $("#btnIELTSUse").onclick=()=>{
   if(!t){$("#ieltsGenHint").textContent="Chưa có";return}
   items=items.concat([t]);store.items=items;idx=items.length-1;
   $("#ieltsGenHint").textContent="Đã thêm";
-  setTimeout(()=>{$("#ieltsGenHint").textContent="";$("#tabPractice").click();renderPractice()},800)
+  setTimeout(()=>{$("#ieltsGenHint").textContent="";$("#tabPractice").click();renderPractice()},800);
 };
 $("#btnIELTSTransGrade").onclick=async()=>{
   const vi=$("#ieltsGenOut").textContent.trim();if(!vi){$("#ieltsGenHint").textContent="Chưa có";return}
@@ -460,15 +472,14 @@ $("#btnIELTSTransGrade").onclick=async()=>{
     if(!r||!r.criteria)throw"Lỗi";
     $("#tabWriting").click();$("#wrEssay").value=en.trim();
     showGradingResult(en,r,$("#wrHead"),$("#wrDiff"),$("#wrBreakdown"),`IELTS Overall (${kind})`,kind==="task1"?"task1":"task2");
-    $("#wrResult").style.display="grid";$("#ieltsGenHint").textContent=""
+    $("#wrResult").style.display="grid";$("#ieltsGenHint").textContent="";
   }catch(e){$("#ieltsGenHint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
-
 // ===== Writing page =====
 $("#wrPrompt").value=store.wrp||"";
 if(store.wri){
   const img=$("#chartImg");img.src=store.wri;img.style.display="block";
-  $("#chartBox").querySelector("span")?.remove()
+  $("#chartBox").querySelector("span")?.remove();
 }
 $("#chartBox").onclick=()=>$("#chartPicker").click();
 $("#chartPicker").onchange=(e)=>{
@@ -476,9 +487,9 @@ $("#chartPicker").onchange=(e)=>{
   const r=new FileReader();
   r.onload=()=>{
     const img=$("#chartImg");img.src=r.result;img.style.display="block";
-    store.wri=r.result;$("#chartBox").querySelector("span")?.remove()
+    store.wri=r.result;$("#chartBox").querySelector("span")?.remove();
   };
-  r.readAsDataURL(f)
+  r.readAsDataURL(f);
 };
 $("#btnGenPrompt").onclick=async()=>{
   const type=$("#wrType").value;
@@ -490,7 +501,7 @@ $("#btnGenPrompt").onclick=async()=>{
     if(!js||!js.prompt)throw"Lỗi";
     $("#wrPrompt").value=js.prompt+(Array.isArray(js.hints)?("\n\nGợi ý:\n- "+js.hints.join("\n- ")):"");
     store.wrp=$("#wrPrompt").value;
-    $("#wrPromptHint").textContent="OK"
+    $("#wrPromptHint").textContent="OK";
   }catch(e){$("#wrPromptHint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
 $("#btnGradeEssay").onclick=async()=>{
@@ -503,11 +514,11 @@ $("#btnGradeEssay").onclick=async()=>{
     if(!js||!js.criteria)throw"Lỗi";
     showGradingResult(essay,js,$("#wrHead"),$("#wrDiff"),$("#wrBreakdown"),"IELTS Overall",mode);
     $("#wrResult").style.display="grid";$("#wrHint").textContent="";
-    addHistory({type:"writing",input:(prompt||"—").slice(0,80),score:js.overall_score,band:bandFromScore(js.overall_score),ok:false})
+    addHistory({type:"writing",input:(prompt||"—").slice(0,80),score:js.overall_score,band:bandFromScore(js.overall_score),ok:false});
   }catch(e){
     $("#wrHead").textContent="Lỗi: "+e;
     $("#wrDiff").innerHTML="";$("#wrBreakdown").innerHTML="";
-    $("#wrResult").style.display="grid"
+    $("#wrResult").style.display="grid";
   }finally{setBusy(false)}
 };
 
@@ -520,9 +531,9 @@ $("#btnTranslateTask").onclick=async()=>{
   try{
     setBusy(true);$("#trTaskHint").textContent="Đang dịch...";
     const out=await callOpenAI(sys,vi,1200);
-    $("#trTaskOut").textContent=out.trim();$("#trTaskHint").textContent=""
+    $("#trTaskOut").textContent=out.trim();$("#trTaskHint").textContent="";
   }catch(e){
-    $("#trTaskOut").textContent="Lỗi: "+e;$("#trTaskHint").textContent=""
+    $("#trTaskOut").textContent="Lỗi: "+e;$("#trTaskHint").textContent="";
   }finally{setBusy(false)}
 };
 $("#btnGradeTranslated").onclick=async()=>{
@@ -535,7 +546,7 @@ $("#btnGradeTranslated").onclick=async()=>{
     if(!js||!js.criteria)throw"Lỗi";
     $("#tabWriting").click();
     showGradingResult(en,js,$("#wrHead"),$("#wrDiff"),$("#wrBreakdown"),"IELTS Overall (Dịch)",mode);
-    $("#wrResult").style.display="grid";$("#trTaskHint").textContent=""
+    $("#wrResult").style.display="grid";$("#trTaskHint").textContent="";
   }catch(e){$("#trTaskHint").textContent="Lỗi: "+e}finally{setBusy(false)}
 };
 // ===== Chat "Hỏi AI" =====
@@ -545,7 +556,7 @@ function appendMsg(t,m=false,ty=false){
   b.innerHTML=ty?'<span class="type">&nbsp;</span>':esc(t);
   r.appendChild(b);$("#chatBox").appendChild(r);
   $("#chatBox").scrollTop=$("#chatBox").scrollHeight;
-  return b
+  return b;
 }
 async function typeOut(e,t,s=12){
   e.innerHTML="";let i=0;
@@ -568,7 +579,7 @@ async function sendAsk(){
   try{
     const sys="Bạn là trợ lý tiếng Anh hữu ích. Giải thích ngắn gọn, có ví dụ; nếu người dùng đưa câu, hãy sửa và nêu lý do. Dùng tiếng Việt khi giải thích, ví dụ bằng EN.";
     const ans=await callOpenAI(sys,q,650);
-    await typeOut(b,ans.replace(/^```[\s\S]*?```/g,""),10)
+    await typeOut(b,ans.replace(/^```[\s\S]*?```/g,""),10);
   }catch(e){b.textContent="Lỗi: "+e}
   finally{chatLock=false}
 }
@@ -648,10 +659,9 @@ $("#btnLookupFromVI").onclick=async()=>{
     $("#dictHint").textContent=""
   }finally{setBusy(false)}
 };
-
 // ===== History & Profile & Donate =====
 function addHistory({type,input,score,band,ok}){
-  const at=store.attempts;at.push({at:Date.now(),type,input,score,band,ok});store.attempts=at
+  const at=store.attempts;at.push({at:Date.now(),type,input,score,band,ok});store.attempts=at;
 }
 function renderHistory(){
   const at=store.attempts,t=at.length,
@@ -667,7 +677,7 @@ function renderHistory(){
     <td class="mono">${esc(a.input||"")}</td>
     <td>${a.band?("Band "+a.band.toFixed(1)):Math.round(a.score||0)}</td>
     <td>${a.ok?"✅":"—"}</td>
-  </tr>`).join("")
+  </tr>`).join("");
 }
 
 const drawer=$("#drawer"),bd=$("#backdrop"),av=$("#avatar"),nameI=$("#displayName");
@@ -680,9 +690,9 @@ function renderDonate(){
     try{
       await navigator.clipboard.writeText(DONATE_PAY_URL);
       $("#dnCopy").textContent="Đã copy ✓";
-      setTimeout(()=>$("#dnCopy").textContent="Copy link",1000)
+      setTimeout(()=>$("#dnCopy").textContent="Copy link",1000);
     }catch(_){alert(DONATE_PAY_URL)}
-  }
+  };
 }
 function openDrawer(){drawer.classList.add("show");bd.classList.add("show");fillProfile();renderDonate()}
 function closeDrawer(){drawer.classList.remove("show");bd.classList.remove("show")}
@@ -695,14 +705,14 @@ function fillProfile(){
         rate=t?Math.round(100*cor/t):0;
   $("#pAvg").textContent=avg;$("#pTotal").textContent=t;$("#pRate").textContent=rate+"%";
   av.src=store.avatar||'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="100%" height="100%" fill="%23e8ecf3"/><text x="50%" y="54%" font-size="36" text-anchor="middle" fill="%23555">🙂</text></svg>';
-  nameI.value=store.name||""
+  nameI.value=store.name||"";
 }
 av.onclick=()=>$("#filePicker").click();
 $("#filePicker").onchange=e=>{
   const f=e.target.files?.[0];if(!f)return;
   const r=new FileReader();
   r.onload=()=>{store.avatar=r.result;av.src=r.result};
-  r.readAsDataURL(f)
+  r.readAsDataURL(f);
 };
 nameI.oninput=()=>{store.name=nameI.value.trim()};
 
@@ -712,19 +722,18 @@ $("#btnExportCSV").onclick=()=>{
   let csv="time,type,input,score,band,ok\n";
   at.forEach(a=>{
     const q=(a.input||"").replace(/"/g,'""');
-    csv+=`${new Date(a.at).toISOString()},"${(a.type||"").replace(/"/g,'""')}","${q}",${a.score??""},${a.band??""},${a.ok||false}\n`
+    csv+=`${new Date(a.at).toISOString()},"${(a.type||"").replace(/"/g,'""')}","${q}",${a.score??""},${a.band??""},${a.ok||false}\n`;
   });
   const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");a.href=url;a.download="history.csv";
-  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url)
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 };
 $("#btnResetProfile").onclick=()=>{
   if(confirm("Xoá toàn bộ lịch sử?")){
-    store.attempts=[];fillProfile();renderHistory()
+    store.attempts=[];fillProfile();renderHistory();
   }
 };
-
 // ===== Settings =====
 $("#apiKey").value=store.key;$("#model").value=store.mdl;$("#endpoint").value=store.ep;
 $("#btnSave").onclick=()=>{
@@ -732,7 +741,7 @@ $("#btnSave").onclick=()=>{
   store.mdl=$("#model").value;
   store.ep=$("#endpoint").value.trim();
   $("#saveMsg").textContent="Đã lưu.";
-  setTimeout(()=>$("#saveMsg").textContent="",1000)
+  setTimeout(()=>$("#saveMsg").textContent="",1000);
 };
 
 // ===== Init =====
@@ -762,19 +771,16 @@ init();
     const h = f.getBoundingClientRect().height || 78;
     return Math.max(48, Math.ceil(h));
   }
-
   function updateVH(){
     const vh = (window.visualViewport?.height || window.innerHeight || 700);
     document.documentElement.style.setProperty("--vh", vh + "px");
   }
-
   function applyFooterPaddingNew(){
     const h = getFooterH();
     lastFooterH = h;
     document.documentElement.style.setProperty("--footer-h", h + "px");
     document.body.style.paddingBottom = (h + 12) + "px";
   }
-
   function fitScrollBoxes(){
     const avail = (window.visualViewport?.height || window.innerHeight || 700);
     const boxes = document.querySelectorAll(".scrollBox,#chatBox");
@@ -784,25 +790,69 @@ init();
       el.style.maxHeight = max + "px";
     });
   }
-
-  function autoScrollDown(el){
-    if(!el) return;
-    requestAnimationFrame(()=>{ el.scrollTop = el.scrollHeight; });
-  }
-
   window.fixScrollLayout = function(){
     updateVH();
     applyFooterPaddingNew();
     fitScrollBoxes();
   };
-
   window.addEventListener("resize", ()=>window.fixScrollLayout());
   window.addEventListener("orientationchange", ()=>setTimeout(window.fixScrollLayout, 400));
   window.addEventListener("load", ()=>window.fixScrollLayout());
-
-  // chạy ngay 1 lần
   window.fixScrollLayout();
 })();
-init();
+// === POPUP THÔNG BÁO — KHỐI ĐỘC LẬP (DÁN CUỐI app.js) ===
+(function(){
+  // CẤU HÌNH NHANH
+  // FORCE_POPUP: "T" = luôn hiện, "F" = luôn ẩn, "" = theo 24h (mặc định)
+  const FORCE_POPUP = "";                 // <-- đổi tuỳ ý
+  const CONTACT_URL = "https://zalo.me/your-admin-link"; // link liên hệ
+  const TTL_MS = 24*60*60*1000; // 24 giờ
 
+  const pp = document.getElementById("appPopup");
+  if(!pp) return; // chưa đặt HTML popup thì thôi
 
+  // phần tử con
+  const $in = sel => pp.querySelector(sel);
+  const btnClose   = $in("#ppClose");
+  const btnHide24h = $in("#ppHide24h");
+  const btnContact = $in("#ppContact");
+
+  // khoá/mở cuộn khi popup bật
+  const lockScroll = on => {
+    document.documentElement.style.overflow = on ? "hidden" : "";
+    document.body.style.overflow = on ? "hidden" : "";
+  };
+
+  const showPP = () => { pp.style.display = "grid"; lockScroll(true); };
+  const hidePP = () => { pp.style.display = "none"; lockScroll(false); };
+
+  // quyết định có hiện không
+  let shouldShow = false;
+  if (FORCE_POPUP === "T") shouldShow = true;
+  else if (FORCE_POPUP === "F") shouldShow = false;
+  else {
+    const until = parseInt(localStorage.getItem("ppHideUntil")||"0", 10);
+    shouldShow = !(until && Date.now() < until);
+  }
+
+  // gắn link liên hệ
+  if (btnContact) btnContact.href = CONTACT_URL;
+
+  // sự kiện
+  if (btnClose) btnClose.onclick = hidePP;
+  if (btnHide24h) btnHide24h.onclick = () => {
+    localStorage.setItem("ppHideUntil", Date.now() + TTL_MS);
+    hidePP();
+  };
+  // click ra nền để đóng
+  pp.addEventListener("click", (e) => {
+    if (e.target === pp) hidePP();
+  });
+  // Esc để đóng
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hidePP();
+  });
+
+  // khởi tạo
+  shouldShow ? showPP() : hidePP();
+})();
