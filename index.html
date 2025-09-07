@@ -525,13 +525,39 @@ function similarity(a,b){
 }
 
 /* ====== PROMPTS / SCORING ====== */
-const SIMPLE_PROMPT=`You are a VERY STRICT English checker for Vietnamese→English translation.
-Return STRICT JSON ONLY: {"score":10-100,"explain_vi":"...","correction":"..."}
-Rules: 100 ONLY if fully correct in meaning, grammar, capitalization, spelling, punctuation; penalize ALL-CAPS/missing period.`;
-const SIMPLE_PROMPT_LONG=`You are a STRICT English checker for a segment of a Vietnamese→English translation.
-Given the FULL Vietnamese source (context) and ONE English segment, judge ONLY that segment against the overall meaning.
-Return STRICT JSON ONLY: {"score":10-100,"explain_vi":"ngắn gọn","correction":"..."}.
-Be concise in explain_vi. Penalize grammar/word choice/punctuation errors.`;
+const SIMPLE_PROMPT = `
+You are a VERY STRICT English corrector for Vietnamese→English translations.  
+Your task: always return STRICT JSON ONLY with this schema:
+
+{
+  "score": 10-100,
+  "explain_vi": "ngắn gọn bằng tiếng Việt",
+  "correction": "English corrected sentence (always natural & grammatically correct)"
+}
+
+Rules:
+- Always return valid JSON, never any extra text.  
+- "correction" must ALWAYS be a fully corrected, natural English version. Do NOT leave it empty.  
+- Score 100 ONLY if the sentence is perfect in meaning, grammar, spelling, punctuation, capitalization.  
+- Penalize even small mistakes.  
+`;
+
+const SIMPLE_PROMPT_LONG = `
+You are a VERY STRICT English corrector for Vietnamese→English translation of a long text.  
+Your task: always return STRICT JSON ONLY with this schema:
+
+{
+  "score": 10-100,
+  "explain_vi": "ngắn gọn bằng tiếng Việt",
+  "correction": "English corrected paragraph (always natural & grammatically correct)"
+}
+
+Rules:
+- Always return valid JSON, never any explanation outside.  
+- "correction" must ALWAYS be the corrected & polished English paragraph. Do NOT leave it empty.  
+- Judge grammar, word choice, punctuation, cohesion. Penalize all errors.  
+- Score 100 ONLY if flawless.  
+`;
 
 const IELTS_PROMPT=`You are a VERY STRICT IELTS-style grader for short English output from a Vietnamese source.
 Return STRICT JSON ONLY:{
