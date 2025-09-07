@@ -56,3 +56,33 @@ textarea{min-height:110px;resize:vertical}
 .type{border-right:2px solid var(--ink);animation:caret 1s steps(1) infinite}
 @keyframes caret{50%{border-color:transparent}}
 .scrollBox{max-height:260px;overflow:auto}
+/* ==== Scroll + Safe Area (mobile) ==== */
+:root{
+  --vh: 100vh;
+  --footer-h: 78px;        /* JS sẽ cập nhật lại giá trị này */
+}
+
+html, body{
+  height: auto;
+  min-height: 100%;
+}
+
+body{
+  padding-bottom: calc(var(--footer-h,78px) + 12px);
+}
+
+.scrollBox,
+#chatBox{
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: none;  /* JS sẽ set max-height */
+}
+
+section.card, section.grid, .card.row, .row{
+  overflow: visible;
+}
+
+.grid.two > .row .scrollBox,
+.grid.two aside .scrollBox{
+  min-height: 160px;
+}
