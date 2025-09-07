@@ -342,6 +342,229 @@
 
   <!-- JS duy nhất -->
   <script defer src="app.js"></script>
+<!-- Onboarding Popup (SEO-safe) -->
+<div id="onb-wrap" role="dialog" aria-modal="true" aria-labelledby="onb-title" aria-describedby="onb-desc"
+     hidden data-nosnippet
+     style="position:fixed;inset:0;z-index:99999;display:grid;place-items:center;
+            background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px)">
+  <div id="onb-card" style="width:min(560px,92%);max-height:88vh;overflow:auto;background:#fff;
+                             border-radius:14px;padding:16px 16px 12px;box-shadow:0 20px 60px rgba(0,0,0,.25);
+                             position:relative">
+    <button id="onb-x" type="button" aria-label="Đóng" title="Đóng"
+            style="position:absolute;top:8px;right:8px;border:0;background:transparent;cursor:pointer;
+                   font-size:22px;line-height:1;opacity:.7">×</button>
 
+    <div style="display:flex;align-items:center;gap:10px;margin:0 28px 6px 0">
+      <div style="font-size:18px">📘</div>
+      <h3 id="onb-title" style="margin:0;font-size:18px">Hướng dẫn nhanh</h3>
+    </div>
+
+    <div id="onb-desc" style="font-size:14px;color:#4b5563;margin:0 0 10px">
+      Một vài ghi chú để bạn dùng hiệu quả hơn.
+    </div>
+
+    <!-- Nội dung động -->
+    <div id="onb-content" style="font-size:15px;line-height:1.6;color:#111">
+      <!-- sẽ được JS đổ vào -->
+    </div>
+
+    <!-- Điều khiển -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="onb-prev" type="button"
+                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer">
+          ← Trước
+        </button>
+        <button id="onb-next" type="button"
+                style="padding:8px 10px;border:1px solid #1f6feb;background:#1f6feb;color:#fff;border-radius:8px;cursor:pointer">
+          Tiếp →
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="onb-skip" type="button"
+                style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer">
+          Để sau
+        </button>
+        <button id="onb-never" type="button"
+                style="padding:8px 10px;border:1px solid #111;border-radius:8px;background:#111;color:#fff;cursor:pointer">
+          Đóng vĩnh viễn
+        </button>
+      </div>
+    </div>
+
+    <!-- Chỉ báo bước -->
+    <div id="onb-dots" aria-hidden="true" style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+      <!-- js render chấm -->
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ====== Cấu hình nhanh ======
+  const STORAGE_KEY_NEVER = "onb_never_show"; // nếu "1" → không hiện lại
+  const STORAGE_KEY_SEEN  = "onb_seen_ts";    // timestamp lần cuối (để bạn dùng nếu muốn hiện định kỳ)
+  const FORCE_SHOW = ""; // "T" = luôn hiện, "F" = luôn ẩn, "" = theo localStorage
+
+  // ====== Nội dung 4 bước ======
+  const steps = [
+    {
+      title: "Lời khuyên sử dụng",
+      desc: "Một vài nguyên tắc giúp bạn tiến bộ bền vững.",
+      html: `
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li>Luôn <b>tự viết trước</b>, rồi mới nhờ AI sửa & giải thích.</li>
+          <li>Sau khi sửa, <b>chép lại câu đúng</b> + ghi <b>quy tắc ngữ pháp</b> rút ra.</li>
+          <li>Tổng kết lỗi lặp (mạo từ, chia động từ, thì...) thành <b>flashcard</b> để ôn.</li>
+          <li>Kết hợp câu ngắn (sửa chính xác) + đoạn dài (phát triển ý, coherence).</li>
+        </ul>
+      `
+    },
+    {
+      title: "Gợi ý luyện đều",
+      desc: "Lịch luyện gọn mỗi ngày.",
+      html: `
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li><b>10–15 phút</b>: dịch VI→EN hoặc viết 5–10 câu, bấm <i>Chấm nhanh</i>.</li>
+          <li><b>15–20 phút</b>: viết 1 đoạn (Spoken/IELTS), bấm <i>Chấm IELTS 4 tiêu chí</i>.</li>
+          <li>Đọc <b>giải thích ngữ pháp</b>, thử <b>2–3 cách diễn đạt</b> cho 1 ý.</li>
+          <li>Ngày hôm sau, ôn lại <b>lỗi cũ</b> trước khi làm bài mới.</li>
+        </ul>
+      `
+    },
+    {
+      title: "Lợi ích khi dùng đúng",
+      desc: "Tận dụng AI như trợ giảng.",
+      html: `
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li>Phản hồi <b>ngay</b> về ngữ pháp, từ vựng, thì, cấu trúc câu.</li>
+          <li>Có <b>giải thích</b> vì sao sai → nhớ quy tắc tốt hơn.</li>
+          <li>Đa dạng hóa diễn đạt, mở rộng collocations tự nhiên.</li>
+          <li>Luyện <b>output chủ động</b> thay vì chỉ đọc.</li>
+        </ul>
+      `
+    },
+    {
+      title: "Tác hại & cách khắc phục",
+      desc: "Những rủi ro thường gặp và cách xử lý.",
+      html: `
+        <ul style="margin:0 0 0 18px;padding:0">
+          <li><b>Lệ thuộc AI</b> → Khắc phục: luôn <b>viết trước</b>, chỉ dùng AI để soi lỗi.</li>
+          <li><b>Thiếu phát triển ý</b> → Khắc phục: mỗi buổi viết 1 đoạn dài, chú ý <i>coherence</i>.</li>
+          <li><b>Chấm không tuyệt đối</b> → Khắc phục: so sánh với <b>band sample</b>, hỏi giáo viên khi cần.</li>
+          <li><b>Quên nhanh quy tắc</b> → Khắc phục: tạo <b>flashcard lỗi lặp</b> & ôn lại sau 1–2 ngày.</li>
+        </ul>
+      `
+    }
+  ];
+
+  // ====== DOM ======
+  const wrap = document.getElementById("onb-wrap");
+  const card = document.getElementById("onb-card");
+  const title = document.getElementById("onb-title");
+  const desc = document.getElementById("onb-desc");
+  const content = document.getElementById("onb-content");
+  const dots = document.getElementById("onb-dots");
+  const btnPrev = document.getElementById("onb-prev");
+  const btnNext = document.getElementById("onb-next");
+  const btnSkip = document.getElementById("onb-skip");
+  const btnNever = document.getElementById("onb-never");
+  const btnX = document.getElementById("onb-x");
+
+  if (!wrap || !card) return;
+
+  // ====== Helpers ======
+  let i = 0;
+  const clamp = (n,a,b)=>Math.max(a,Math.min(b,n));
+
+  function lockScroll(on){
+    document.documentElement.style.overflow = on ? "hidden" : "";
+    document.body.style.overflow = on ? "hidden" : "";
+  }
+
+  function renderStep(){
+    const s = steps[i];
+    title.textContent = s.title;
+    desc.textContent = s.desc;
+    content.innerHTML = s.html;
+
+    // dots
+    dots.innerHTML = steps.map((_,idx)=>(
+      `<span style="width:8px;height:8px;border-radius:999px;display:inline-block;
+                    background:${idx===i?'#1f6feb':'#d1d5db'}"></span>`
+    )).join("");
+
+    // buttons
+    btnPrev.disabled = (i===0);
+    btnNext.textContent = (i===steps.length-1) ? "Hoàn tất" : "Tiếp →";
+  }
+
+  function open(){
+    wrap.hidden = false;
+    wrap.style.display = "grid";
+    lockScroll(true);
+    renderStep();
+  }
+  function close(){
+    wrap.style.display = "none";
+    wrap.hidden = true;
+    lockScroll(false);
+  }
+
+  // ====== Visibility logic ======
+  let show = false;
+  if (FORCE_SHOW==="T") show = true;
+  else if (FORCE_SHOW==="F") show = false;
+  else show = (localStorage.getItem(STORAGE_KEY_NEVER)!=="1");
+
+  if (show) open();
+
+  // ====== Events ======
+  btnPrev.onclick = ()=>{ i = clamp(i-1,0,steps.length-1); renderStep(); };
+  btnNext.onclick = ()=>{
+    if (i < steps.length-1){ i++; renderStep(); }
+    else { // hoàn tất
+      localStorage.setItem(STORAGE_KEY_SEEN, Date.now().toString());
+      close();
+    }
+  };
+  btnSkip.onclick = ()=> close();
+  btnNever.onclick = ()=>{
+    localStorage.setItem(STORAGE_KEY_NEVER, "1");
+    localStorage.setItem(STORAGE_KEY_SEEN, Date.now().toString());
+    close();
+  };
+  btnX.onclick = ()=> close();
+
+  // Click ra nền để đóng
+  wrap.addEventListener("click", (e)=>{ if(e.target===wrap) close(); });
+
+  // Phím tắt
+  document.addEventListener("keydown", (e)=>{
+    if (wrap.hidden) return;
+    if (e.key==="Escape") close();
+    if (e.key==="ArrowRight") btnNext.click();
+    if (e.key==="ArrowLeft") btnPrev.click();
+  });
+
+  // Dark-mode nhẹ (nếu trang bật .dark)
+  const root = document.documentElement;
+  const observer = new MutationObserver(()=>{
+    if (root.classList.contains("dark")){
+      card.style.background = "#0b1220";
+      card.style.color = "#e5e7eb";
+    } else {
+      card.style.background = "#fff";
+      card.style.color = "#111";
+    }
+  });
+  observer.observe(root, { attributes:true, attributeFilter:["class"] });
+  // init theme
+  if (root.classList.contains("dark")){
+    card.style.background = "#0b1220";
+    card.style.color = "#e5e7eb";
+  }
+})();
+</script>
 </body>
 </html>
