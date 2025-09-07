@@ -410,7 +410,9 @@ const DONATE_NAME="Hoàng xxxxxxxxxxx Tuấn";
 const DONATE_NOTE="Sự Ủng Hộ Của Bạn Sẽ Giúp Ích Rất Lớn Cho Chúng Tôi";
 const DONATE_QR_IMG="https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";
 const DONATE_PAY_URL="https://www.facebook.com/share/17KTnVMyMs/?mibextid=wwXIfr";
-
+  
+const ADMIN_PROXY = "https://gptaikey.hackpubgso01vn.workers.dev/";
+  
 const $=s=>document.querySelector(s);
 const el=(t,c,h)=>{const x=document.createElement(t);if(c)x.className=c;if(h!=null)x.innerHTML=h;return x;};
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -474,14 +476,48 @@ $('#btnNext').onclick=()=>{idx=clamp(idx+1,0,items.length-1);renderPractice();};
 window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')$('#btnPrev').click(); if(e.key==='ArrowRight')$('#btnNext').click();});
 
 /* ====== UTIL / OPENAI ====== */
-function setBusy(on){document.querySelectorAll('button').forEach(b=>b.disabled=!!on);}
-async function callOpenAI(sys,usr,max_tokens=900){
-  if(!store.key) throw new Error('Chưa có API key (tab Cài đặt).');
-  const r=await fetch(store.ep,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+store.key},body:JSON.stringify({model:store.mdl,temperature:0.2,max_tokens,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
-  if(!r.ok){const t=await r.text();throw new Error('API lỗi '+r.status+' — '+t);}
-  const d=await r.json(); return d.choices?.[0]?.message?.content||'';
+function setBusy(on) {
+  document.querySelectorAll('button').forEach(b => b.disabled = !!on);
 }
-const parseJSON=t=>{try{return JSON.parse(t.trim().replace(/^```json|```$/g,''))}catch(_){return null}};
+
+async function callOpenAI(sys, usr, max_tokens = 900) {
+  let url, headers;
+
+  if (store.key) {
+    // Có API key -> gọi thẳng OpenAI
+    url = store.ep; // ví dụ: https://api.openai.com/v1/chat/completions
+    headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + store.key
+    };
+  } else {
+    // Không có API key -> gọi qua proxy Cloudflare Worker
+    url = ADMIN_PROXY; // ví dụ: https://<worker>.<account>.workers.dev
+    headers = { "Content-Type": "application/json" };
+  }
+
+  const r = await fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      model: store.mdl,        // giữ nguyên chọn model ở phần Cài đặt
+      temperature: 0.2,
+      max_tokens,
+      messages: [
+        { role: "system", content: sys },
+        { role: "user",   content: usr }
+      ]
+    })
+  });
+
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error("API lỗi " + r.status + " — " + t);
+  }
+
+  const d = await r.json();
+  return d.choices?.[0]?.message?.content || "";
+}
 
 /* ====== DIFF GỌN (SIMPLE) ====== */
 function tokenize(s){return (s||'').replace(/\s+/g,' ').trim().split(/(\s+|[.,!?;:;()'"-])/).filter(x=>x!=='');}
