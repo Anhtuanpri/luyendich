@@ -563,5 +563,54 @@
     const v=snap.val(); const sum=row.querySelector('.react-summary'); updateSummary(sum,v.reactions||{}); });
 </script>
 <!-- ========= /CHAT ========= -->
+  <!-- ===== VERIFIED BADGE (TikTok style) ===== -->
+<style>
+  .verified-badge {
+    display:inline-flex;
+    align-items:center;
+    margin-left:4px;       /* khoảng cách với chữ */
+    position:relative;
+    top:1px;              /* nâng lên một tí xíu */
+  }
+  .verified-badge svg {
+    width:18px;  /* chỉnh size nếu cần */
+    height:18px;
+    display:block;
+  }
+</style>
+
+<script>
+(function(){
+  const badgeHTML = `
+    <span class="verified-badge" title="Đã xác minh">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <!-- vòng tròn xanh TikTok -->
+        <circle cx="12" cy="12" r="10" fill="#25F4EE"/>
+        <!-- check trắng -->
+        <path d="M9.5 12.5l2 2 4-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>`;
+
+  function findTitle(){
+    return document.querySelector('h1') ||
+           document.querySelector('.page-title') ||
+           document.querySelector('[data-title]');
+  }
+
+  function attachBadge(){
+    const title = findTitle();
+    if (!title) return;
+    if (title.querySelector('.verified-badge')) return;
+    const wrap = document.createElement('span');
+    wrap.innerHTML = badgeHTML;
+    title.appendChild(wrap.firstElementChild);
+  }
+
+  attachBadge();
+  const mo = new MutationObserver(() => attachBadge());
+  mo.observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+<!-- ===== /VERIFIED BADGE ===== -->
 </body>
 </html>
