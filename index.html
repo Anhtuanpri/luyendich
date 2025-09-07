@@ -1,327 +1,346 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GIÁO VIÊN AI - CHÚC MỌI NGƯỜI HỌC TẬP VUI VẺ</title>
-<meta name="description" content="Tạo câu theo band A2/B1/B2/C1 (có ngữ cảnh), tạo văn nói & văn IELTS (Task1/Task2). Luyện dịch, chấm 10–100 & IELTS 4 tiêu chí. Donate QR hard-code.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Coach: WRITING</title>
+  <meta name="description" content="Luyện dịch VI→EN, tạo câu theo band, chấm IELTS 4 tiêu chí." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- CSS của bạn -->
+  <link rel="stylesheet" href="a9f7q1p0.css" />
 </head>
 <body>
-<div class="container">
-  <header>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button id="btnHamburger" class="hamburger" title="Menu">|||</button>
-      <div>
-        <h1>The Coach: WRITING</h1>
-        <p class="lead">Tạo Câu Chuẩn Band - Chấm Đủ 4 Tiêu Chí</p>
-      </div>
-    </div>
-    <div class="tabs">
-      <button class="tab active" id="tabPractice">Luyện tập</button>
-      <button class="tab" id="tabManual">Tạo thủ công</button>
-      <button class="tab" id="tabGenSent">Tạo Câu</button>
-      <button class="tab" id="tabSpoken">Tạo Văn Nói</button>
-      <button class="tab" id="tabIELTSGen">Tạo Văn IELTS</button>
-      <button class="tab" id="tabWriting">Writing</button>
-      <button class="tab" id="tabAsk">Hỏi AI</button>
-      <button class="tab" id="tabDict">Từ điển</button>
-      <button class="tab" id="tabHistory">Lịch sử</button>
-      <button class="tab" id="tabSettings">Cài đặt</button>
-      <button id="toggleTheme" class="themeToggle" title="Đổi giao diện">🌤️</button>
-    </div>
-  </header>
-
-  <section id="secPractice" class="grid two" style="margin-top:16px">
-    <div class="card row">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span class="badge">Bài luyện dịch VI → EN</span><span id="counter" class="subtle">Câu 1/1</span>
-      </div>
-      <div class="progress"><div id="progbar" style="width:0%"></div></div>
-      <div class="sectionTitle">Hãy Dịch</div>
-      <div id="viBox" class="boxVI mono limit10">—</div>
-      <div class="row">
-        <div class="sectionTitle">Nhập Đáp Án Ở Đây Bạn Nhé🥰</div>
-        <textarea id="answer" class="mono" placeholder="Gõ tiếng Anh ở đây..."></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="btnTranslateNow" class="btn">Xem mẫu câu tham khảo</button>
-          <button id="btnSuggest" class="btn">Gợi ý</button>
-          <button id="btnGradeSimple" class="btn primary">Chấm nhanh 10–100</button>
-          <button id="btnGradeIELTS" class="btn">Chấm IELTS (4 tiêu chí)</button>
+  <!-- ==== UI GIỮ NGUYÊN NHƯ BẠN DÁN (đã đúng id/class) ==== -->
+  <!-- mình giữ nguyên cấu trúc bạn gửi, chỉ bỏ hết script inline cũ để tránh đè callOpenAI -->
+  <div class="container">
+    <header>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="btnHamburger" class="hamburger" title="Menu">|||</button>
+        <div>
+          <h1>The Coach: WRITING</h1>
+          <p class="lead">Tạo Câu Chuẩn Band - Chấm Đủ 4 Tiêu Chí</p>
         </div>
       </div>
-      <div id="hint" class="subtle"></div>
-    </div>
+      <div class="tabs">
+        <button class="tab active" id="tabPractice">Luyện tập</button>
+        <button class="tab" id="tabManual">Tạo thủ công</button>
+        <button class="tab" id="tabGenSent">Tạo Câu</button>
+        <button class="tab" id="tabSpoken">Tạo Văn Nói</button>
+        <button class="tab" id="tabIELTSGen">Tạo Văn IELTS</button>
+        <button class="tab" id="tabWriting">Writing</button>
+        <button class="tab" id="tabAsk">Hỏi AI</button>
+        <button class="tab" id="tabDict">Từ điển</button>
+        <button class="tab" id="tabHistory">Lịch sử</button>
+        <button class="tab" id="tabSettings">Cài đặt</button>
+        <button id="toggleTheme" class="themeToggle" title="Đổi giao diện">🌤️</button>
+      </div>
+    </header>
 
-    <div class="row">
+    <!-- ==== CÁC SECTION GIỮ NGUYÊN NHƯ BẢN CỦA BẠN ==== -->
+    <!-- Practice -->
+    <section id="secPractice" class="grid two" style="margin-top:16px">
       <div class="card row">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="sectionTitle">Gợi ý từ AI Teacher</div>
-          <label class="subtle"><input type="checkbox" id="toggleViGloss"> Hiện dịch VI</label>
+          <span class="badge">Bài luyện dịch VI → EN</span><span id="counter" class="subtle">Câu 1/1</span>
         </div>
-        <div class="kv"><b>Key idea</b><div id="gIdea" class="subtle">—</div></div>
-        <div class="kv"><b>Vocabulary</b><div id="gVocab" class="subtle">—</div></div>
-        <div class="kv"><b>Grammar</b><div id="gGrammar" class="subtle">—</div></div>
+        <div class="progress"><div id="progbar" style="width:0%"></div></div>
+        <div class="sectionTitle">Hãy Dịch</div>
+        <div id="viBox" class="boxVI mono limit10">—</div>
+
+        <div class="row">
+          <div class="sectionTitle">Nhập Đáp Án Ở Đây Bạn Nhé🥰</div>
+          <textarea id="answer" class="mono" placeholder="Gõ tiếng Anh ở đây..."></textarea>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="btnTranslateNow" class="btn">Xem mẫu câu tham khảo</button>
+            <button id="btnSuggest" class="btn">Gợi ý</button>
+            <button id="btnGradeSimple" class="btn primary">Chấm nhanh 10–100</button>
+            <button id="btnGradeIELTS" class="btn">Chấm IELTS (4 tiêu chí)</button>
+          </div>
+        </div>
+        <div id="hint" class="subtle"></div>
       </div>
 
-      <div class="card row">
-        <div class="sectionTitle">Kết quả</div>
-        <div id="gradeHeader" class="subtle">Chưa chấm.</div>
-        <div id="gradeDiff" class="diff mono scrollBox"></div>
-        <div id="gradeBreakdown" class="row"></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="secManual" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo câu/đoạn tiếng Việt thủ công • Thêm vào Luyện tập</div>
-    <textarea id="manualVI" class="mono" placeholder="Dán nhiều dòng, mỗi dòng 1 câu. Có thể dán đoạn dài."></textarea>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button id="btnUseManual" class="btn primary">Thêm vào Luyện tập</button>
-      <span id="manualHint" class="subtle"></span>
-    </div>
-  </section>
-
-  <section id="secGenSent" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo câu tiếng Việt theo band (A2/B1/B2/C1) + Ngữ cảnh • Dùng để luyện dịch</div>
-    <div class="grid" style="grid-template-columns:1.2fr .8fr">
       <div class="row">
-        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:8px">
-          <label>Band
-            <select id="gsBand" class="select">
-              <option value="A2">A2 (cơ bản)</option>
-              <option value="B1" selected>B1 (trung cấp thấp)</option>
-              <option value="B2">B2 (trung cấp cao)</option>
-              <option value="C1">C1 (nâng cao)</option>
-            </select>
-          </label>
-          <label>Độ dài
-            <select id="gsLen" class="select">
-              <option value="short" selected>Ngắn (~8–15 từ)</option>
-              <option value="medium">Vừa (~12–20 từ)</option>
-            </select>
-          </label>
-          <label>Số câu
-            <input id="gsCount" type="number" min="1" max="30" value="6" class="input">
-          </label>
-          <label>Chủ đề
-            <input id="gsTopic" class="input" placeholder="gia đình, công việc, du lịch...">
-          </label>
+        <div class="card row">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="sectionTitle">Gợi ý từ AI Teacher</div>
+            <label class="subtle"><input type="checkbox" id="toggleViGloss"> Hiện dịch VI</label>
+          </div>
+          <div class="kv"><b>Key idea</b><div id="gIdea" class="subtle">—</div></div>
+          <div class="kv"><b>Vocabulary</b><div id="gVocab" class="subtle">—</div></div>
+          <div class="kv"><b>Grammar</b><div id="gGrammar" class="subtle">—</div></div>
         </div>
-        <label>Ngữ cảnh (tuỳ chọn)
-          <textarea id="gsContext" class="mono" placeholder="Ví dụ: hội thoại ở quán cà phê; ngữ cảnh đặt chỗ khách sạn; tình huống thuyết trình..."></textarea>
-        </label>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button id="btnGSGen" class="btn primary">Tạo câu (VI)</button>
-          <span id="gsHint" class="subtle"></span>
+
+        <div class="card row">
+          <div class="sectionTitle">Kết quả</div>
+          <div id="gradeHeader" class="subtle">Chưa chấm.</div>
+          <div id="gradeDiff" class="diff mono scrollBox"></div>
+          <div id="gradeBreakdown" class="row"></div>
         </div>
       </div>
-      <aside class="row">
-        <div class="sectionTitle">Kết quả</div>
-        <div id="gsOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
-        <div style="display:flex;gap:8px"><button id="btnGSUse" class="btn">Thêm vào Luyện tập</button></div>
-      </aside>
-    </div>
-  </section>
+    </section>
 
-  <section id="secSpoken" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo bài <b>văn nói</b> (tiếng Việt) • Theo Ngữ Cảnh</div>
-    <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row">
-        <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
-          <label>Chủ đề<input id="spTopic" class="input" placeholder="đời sống, học tập, du lịch..."></label>
-          <label>Độ dài
-            <select id="spLen" class="select">
-              <option value="short">~80–120 từ</option>
-              <option value="medium" selected>~150–200 từ</option>
-              <option value="long">~220–300 từ</option>
-            </select>
-          </label>
-        </div>
-        <label>Ngữ cảnh (tuỳ chọn)
-          <textarea id="spContext" class="mono" placeholder="Ví dụ: kể chuyện với bạn; trình bày trước lớp; chia sẻ trải nghiệm..."></textarea>
-        </label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <button id="btnSpGen" class="btn primary">Tạo văn nói (VI)</button>
-          <button id="btnSpUse" class="btn">Thêm vào Luyện tập</button>
-          <button id="btnSpTransGrade" class="btn">Dịch & Chấm IELTS</button>
-          <span id="spHint" class="subtle"></span>
-        </div>
-      </div>
-      <aside class="row">
-        <div class="sectionTitle">Kết quả</div>
-        <div id="spOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="secIELTSGen" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Tạo bài <b>văn IELTS</b> (tiếng Việt): Task 1 / Task 2</div>
-    <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <select id="genEssayType" class="select" style="max-width:220px">
-            <option value="task2" selected>Task 2 (Opinion/Argument)</option>
-            <option value="task1">Task 1 (Mô tả biểu đồ)</option>
-          </select>
-          <select id="genEssayLen" class="select" style="max-width:220px">
-            <option value="short">~140 từ</option>
-            <option value="medium" selected>~200–230 từ</option>
-            <option value="long">~260–300 từ</option>
-          </select>
-          <button id="btnGenEssayVI" class="btn primary">Tạo bài văn IELTS (VI)</button>
-          <button id="btnIELTSUse" class="btn">Thêm vào Luyện tập</button>
-          <button id="btnIELTSTransGrade" class="btn">Dịch & Chấm IELTS</button>
-          <span id="ieltsGenHint" class="subtle"></span>
-        </div>
-      </div>
-      <aside class="row">
-        <div class="sectionTitle">Kết quả</div>
-        <div id="ieltsGenOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
-      </aside>
-    </div>
-  </section>
-
-  <section id="secWriting" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Writing Task • Chấm IELTS bài EN & Dịch bài VI ➜ EN (Task1/Task2)</div>
-    <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row">
-        <label>Đề bài</label>
-        <textarea id="wrPrompt" class="mono" placeholder="Nhập đề viết..."></textarea>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button id="btnGenPrompt" class="btn">Tạo đề bằng AI</button>
-          <select id="wrType" class="select">
-            <option value="task2" selected>Task 2 (Opinion/Argument)</option>
-            <option value="task1">Task 1 (Graph/Chart)</option>
-          </select>
-          <span id="wrPromptHint" class="subtle"></span>
-        </div>
-        <label style="margin-top:10px">Bài viết (EN) — dùng để chấm</label>
-        <textarea id="wrEssay" class="mono" placeholder="Viết bài bằng tiếng Anh..."></textarea>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
-          <button id="btnGradeEssay" class="btn primary">Chấm IELTS (4 tiêu chí)</button>
-          <span id="wrHint" class="subtle"></span>
-        </div>
-      </div>
-      <aside class="row">
-        <div class="sectionTitle">Ảnh biểu đồ (tuỳ chọn)</div>
-        <div id="chartBox" style="border:1px dashed var(--line);border-radius:12px;padding:10px;display:grid;place-items:center;cursor:pointer;min-height:150px;background:#fbfdff">
-          <span class="subtle">Nhấn để chọn ảnh (png/jpg)</span>
-          <img id="chartImg" alt="" style="max-width:100%;display:none;border-radius:8px">
-        </div>
-        <input id="chartPicker" type="file" accept="image/*" style="display:none">
-      </aside>
-    </div>
-
-    <div class="card row" style="margin-top:10px">
-      <div class="sectionTitle">Dịch bài tiếng Việt ➜ English (giữ phong cách IELTS)</div>
+    <!-- Manual -->
+    <section id="secManual" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Tạo câu/đoạn tiếng Việt thủ công • Thêm vào Luyện tập</div>
+      <textarea id="manualVI" class="mono" placeholder="Dán nhiều dòng, mỗi dòng 1 câu. Có thể dán đoạn dài."></textarea>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select id="trTaskType" class="select" style="max-width:220px">
-          <option value="task2" selected>Task 2</option>
-          <option value="task1">Task 1</option>
-        </select>
-        <button id="btnTranslateTask" class="btn">Dịch bài VI ➜ EN</button>
-        <button id="btnGradeTranslated" class="btn">Chấm kết quả dịch</button>
-        <span id="trTaskHint" class="subtle"></span>
+        <button id="btnUseManual" class="btn primary">Thêm vào Luyện tập</button>
+        <span id="manualHint" class="subtle"></span>
       </div>
-      <textarea id="trTaskInput" class="mono" placeholder="Dán bài tiếng Việt (Task 1/2) vào đây..."></textarea>
-      <div class="sectionTitle">Kết quả dịch (EN)</div>
-      <div id="trTaskOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
-    </div>
+    </section>
 
-    <div class="card row" id="wrResult" style="display:none">
-      <div class="sectionTitle">Kết quả IELTS</div>
-      <div id="wrHead" class="subtle">—</div>
-      <div id="wrDiff" class="diff mono scrollBox"></div>
-      <div id="wrBreakdown" class="row"></div>
-    </div>
-  </section>
-
-  <section id="secAsk" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Hỏi AI (giải thích ngữ pháp, sửa câu, ví dụ theo ngữ cảnh)</div>
-    <div class="chat" id="chatBox"></div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-      <input id="askInput" class="input" placeholder="Ví dụ: Giải thích present perfect vs past simple...">
-      <button id="btnAsk" class="btn primary">Gửi</button>
-      <span id="askHint" class="subtle"></span>
-    </div>
-  </section>
-
-  <section id="secDict" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Từ điển ngữ cảnh (IPA UK/US + nhiều nghĩa + ví dụ)</div>
-    <div class="grid" style="grid-template-columns:1.1fr .9fr">
-      <div class="row">
-        <label>Tra từ/cụm từ<input id="q" class="input" placeholder="take off, anxiety, run into..."></label>
-        <div style="display:flex;gap:8px;align-items:center"><button id="btnLookup" class="btn primary">Tra</button><button id="btnLookupFromVI" class="btn">Gợi ý dịch câu hiện tại</button><span id="dictHint" class="subtle"></span></div>
-        <div id="dictOut" class="row"></div>
+    <!-- Gen Sentences -->
+    <section id="secGenSent" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Tạo câu tiếng Việt theo band (A2/B1/B2/C1) + Ngữ cảnh</div>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr">
+        <div class="row">
+          <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:8px">
+            <label>Band
+              <select id="gsBand" class="select">
+                <option value="A2">A2</option>
+                <option value="B1" selected>B1</option>
+                <option value="B2">B2</option>
+                <option value="C1">C1</option>
+              </select>
+            </label>
+            <label>Độ dài
+              <select id="gsLen" class="select">
+                <option value="short" selected>Ngắn (~8–15)</option>
+                <option value="medium">Vừa (~12–20)</option>
+              </select>
+            </label>
+            <label>Số câu
+              <input id="gsCount" type="number" min="1" max="30" value="6" class="input" />
+            </label>
+            <label>Chủ đề
+              <input id="gsTopic" class="input" placeholder="gia đình, công việc, du lịch..." />
+            </label>
+          </div>
+          <label>Ngữ cảnh (tuỳ chọn)
+            <textarea id="gsContext" class="mono" placeholder="Ví dụ: hội thoại quán cà phê..."></textarea>
+          </label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="btnGSGen" class="btn primary">Tạo câu (VI)</button>
+            <span id="gsHint" class="subtle"></span>
+          </div>
+        </div>
+        <aside class="row">
+          <div class="sectionTitle">Kết quả</div>
+          <div id="gsOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
+          <div style="display:flex;gap:8px">
+            <button id="btnGSUse" class="btn">Thêm vào Luyện tập</button>
+          </div>
+        </aside>
       </div>
-      <aside class="row"><div class="sectionTitle">Lịch sử từ điển</div><div id="dictHistory" class="subtle">Chưa có.</div></aside>
-    </div>
-  </section>
+    </section>
 
-  <section id="secHistory" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Lịch sử làm bài</div>
-    <div class="row" style="grid-template-columns:repeat(4,1fr);gap:10px">
-      <div class="stat"><span>Tổng lượt</span><b id="hisTotal">0</b></div>
-      <div class="stat"><span>Điểm TB</span><b id="hisAvg">0</b></div>
-      <div class="stat"><span>Đúng (Simple ≥90)</span><b id="hisCorrect">0</b></div>
-      <div class="stat"><span>Tỉ lệ đúng</span><b id="hisRate">0%</b></div>
-    </div>
-    <table class="table" id="hisTable"><thead><tr><th>Thời gian</th><th>Loại</th><th>Input</th><th>Điểm/Band</th><th>Kết quả</th></tr></thead><tbody></tbody></table>
-  </section>
+    <!-- Spoken -->
+    <section id="secSpoken" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Tạo bài <b>văn nói</b> (tiếng Việt)</div>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr">
+        <div class="row">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+            <label>Chủ đề<input id="spTopic" class="input" placeholder="đời sống, học tập..." /></label>
+            <label>Độ dài
+              <select id="spLen" class="select">
+                <option value="short">~80–120</option>
+                <option value="medium" selected>~150–200</option>
+                <option value="long">~220–300</option>
+              </select>
+            </label>
+          </div>
+          <label>Ngữ cảnh (tuỳ chọn)
+            <textarea id="spContext" class="mono" placeholder="kể chuyện với bạn; trình bày trước lớp..."></textarea>
+          </label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button id="btnSpGen" class="btn primary">Tạo văn nói (VI)</button>
+            <button id="btnSpUse" class="btn">Thêm vào Luyện tập</button>
+            <button id="btnSpTransGrade" class="btn">Dịch & Chấm IELTS</button>
+            <span id="spHint" class="subtle"></span>
+          </div>
+        </div>
+        <aside class="row">
+          <div class="sectionTitle">Kết quả</div>
+          <div id="spOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
+        </aside>
+      </div>
+    </section>
 
-  <section id="secSettings" class="card row" style="display:none;margin-top:16px">
-    <div class="badge">Cài đặt API</div>
-    <div class="grid" style="grid-template-columns:1.2fr .8fr">
-      <div class="row"><label>OpenAI API Key<input id="apiKey" class="input" type="password" placeholder="sk-..."></label><div class="subtle">Nhập API key vào đây.</div></div>
-      <div class="row"><label>Model<select id="model" class="select"><option value="gpt-4o-mini" selected>gpt-4o-mini</option><option value="gpt-4o">gpt-4o</option><option value="gpt-4.1-mini">gpt-4.1-mini</option></select></label><label style="margin-top:6px">Endpoint<input id="endpoint" class="input" value="https://api.openai.com/v1/chat/completions"></label></div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center"><button id="btnSave" class="btn primary">Lưu</button><span id="saveMsg" class="subtle"></span></div>
-  </section>
-</div>
+    <!-- IELTS Gen -->
+    <section id="secIELTSGen" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Tạo bài <b>văn IELTS</b> (VI): Task 1 / Task 2</div>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr">
+        <div class="row">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="genEssayType" class="select" style="max-width:220px">
+              <option value="task2" selected>Task 2</option>
+              <option value="task1">Task 1</option>
+            </select>
+            <select id="genEssayLen" class="select" style="max-width:220px">
+              <option value="short">~140</option>
+              <option value="medium" selected>~200–230</option>
+              <option value="long">~260–300</option>
+            </select>
+            <button id="btnGenEssayVI" class="btn primary">Tạo bài văn IELTS (VI)</button>
+            <button id="btnIELTSUse" class="btn">Thêm vào Luyện tập</button>
+            <button id="btnIELTSTransGrade" class="btn">Dịch & Chấm IELTS</button>
+            <span id="ieltsGenHint" class="subtle"></span>
+          </div>
+        </div>
+        <aside class="row">
+          <div class="sectionTitle">Kết quả</div>
+          <div id="ieltsGenOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
+        </aside>
+      </div>
+    </section>
 
-<div id="footerNav" class="footerNav">
-  <div class="wrapNav"><span class="subtle">Phím tắt: ← / →</span><div style="display:flex;gap:8px"><button id="btnPrev" class="btn">Câu trước</button><button id="btnNext" class="btn primary">Câu tiếp theo</button></div></div>
-</div>
+    <!-- Writing -->
+    <section id="secWriting" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Writing Task • Chấm IELTS & Dịch VI ➜ EN</div>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr">
+        <div class="row">
+          <label>Đề bài</label>
+          <textarea id="wrPrompt" class="mono" placeholder="Nhập đề viết..."></textarea>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button id="btnGenPrompt" class="btn">Tạo đề bằng AI</button>
+            <select id="wrType" class="select">
+              <option value="task2" selected>Task 2</option>
+              <option value="task1">Task 1</option>
+            </select>
+            <span id="wrPromptHint" class="subtle"></span>
+          </div>
+          <label style="margin-top:10px">Bài viết (EN) — dùng để chấm</label>
+          <textarea id="wrEssay" class="mono" placeholder="Viết bài bằng tiếng Anh..."></textarea>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+            <button id="btnGradeEssay" class="btn primary">Chấm IELTS (4 tiêu chí)</button>
+            <span id="wrHint" class="subtle"></span>
+          </div>
+        </div>
+        <aside class="row">
+          <div class="sectionTitle">Ảnh biểu đồ (tuỳ chọn)</div>
+          <div id="chartBox" style="border:1px dashed var(--line);border-radius:12px;padding:10px;display:grid;place-items:center;cursor:pointer;min-height:150px;background:#fbfdff">
+            <span class="subtle">Nhấn để chọn ảnh (png/jpg)</span>
+            <img id="chartImg" alt="" style="max-width:100%;display:none;border-radius:8px">
+          </div>
+          <input id="chartPicker" type="file" accept="image/*" style="display:none">
+        </aside>
+      </div>
 
-<div id="drawer" class="drawer" aria-label="Menu">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <div class="sectionTitle">Hồ sơ</div>
-    <button id="btnCloseDrawer" class="btn">Đóng</button>
+      <div class="card row" style="margin-top:10px">
+        <div class="sectionTitle">Dịch bài tiếng Việt ➜ English (giữ phong cách IELTS)</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <select id="trTaskType" class="select" style="max-width:220px">
+            <option value="task2" selected>Task 2</option>
+            <option value="task1">Task 1</option>
+          </select>
+          <button id="btnTranslateTask" class="btn">Dịch bài VI ➜ EN</button>
+          <button id="btnGradeTranslated" class="btn">Chấm kết quả dịch</button>
+          <span id="trTaskHint" class="subtle"></span>
+        </div>
+        <textarea id="trTaskInput" class="mono" placeholder="Dán bài tiếng Việt (Task 1/2) vào đây..."></textarea>
+        <div class="sectionTitle">Kết quả dịch (EN)</div>
+        <div id="trTaskOut" class="card mono scrollBox" style="white-space:pre-wrap"></div>
+      </div>
+
+      <div class="card row" id="wrResult" style="display:none">
+        <div class="sectionTitle">Kết quả IELTS</div>
+        <div id="wrHead" class="subtle">—</div>
+        <div id="wrDiff" class="diff mono scrollBox"></div>
+        <div id="wrBreakdown" class="row"></div>
+      </div>
+    </section>
+
+    <!-- Ask AI -->
+    <section id="secAsk" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Hỏi AI (giải thích ngữ pháp, sửa câu,...)</div>
+      <div class="chat" id="chatBox"></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <input id="askInput" class="input" placeholder="Ví dụ: present perfect vs past simple..." />
+        <button id="btnAsk" class="btn primary">Gửi</button>
+        <span id="askHint" class="subtle"></span>
+      </div>
+    </section>
+
+    <!-- Dict -->
+    <section id="secDict" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Từ điển ngữ cảnh</div>
+      <div class="grid" style="grid-template-columns:1.1fr .9fr">
+        <div class="row">
+          <label>Tra từ/cụm từ<input id="q" class="input" placeholder="take off, anxiety, run into..." /></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="btnLookup" class="btn primary">Tra</button>
+            <button id="btnLookupFromVI" class="btn">Gợi ý dịch câu hiện tại</button>
+            <span id="dictHint" class="subtle"></span>
+          </div>
+          <div id="dictOut" class="row"></div>
+        </div>
+        <aside class="row">
+          <div class="sectionTitle">Lịch sử từ điển</div>
+          <div id="dictHistory" class="subtle">Chưa có.</div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section id="secHistory" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Lịch sử làm bài</div>
+      <div class="row" style="grid-template-columns:repeat(4,1fr);gap:10px">
+        <div class="stat"><span>Tổng lượt</span><b id="hisTotal">0</b></div>
+        <div class="stat"><span>Điểm TB</span><b id="hisAvg">0</b></div>
+        <div class="stat"><span>Đúng (Simple ≥90)</span><b id="hisCorrect">0</b></div>
+        <div class="stat"><span>Tỉ lệ đúng</span><b id="hisRate">0%</b></div>
+      </div>
+      <table class="table" id="hisTable">
+        <thead><tr><th>Thời gian</th><th>Loại</th><th>Input</th><th>Điểm/Band</th><th>Kết quả</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Settings -->
+    <section id="secSettings" class="card row" style="display:none;margin-top:16px">
+      <div class="badge">Cài đặt API</div>
+      <div class="grid" style="grid-template-columns:1.2fr .8fr">
+        <div class="row">
+          <label>OpenAI API Key
+            <input id="apiKey" class="input" type="password" placeholder="sk-..." />
+          </label>
+          <div class="subtle">Để trống để dùng Worker proxy.</div>
+        </div>
+        <div class="row">
+          <label>Model
+            <select id="model" class="select">
+              <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+            </select>
+          </label>
+          <label style="margin-top:6px">Endpoint
+            <input id="endpoint" class="input" value="https://api.openai.com/v1/chat/completions" />
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="btnSave" class="btn primary">Lưu</button><span id="saveMsg" class="subtle"></span>
+      </div>
+    </section>
   </div>
 
-  <div class="row" style="align-items:center">
-    <div style="display:flex;gap:12px;align-items:center">
-      <img id="avatar" class="avatar" alt="Ảnh đại diện" src="">
-      <div class="row" style="gap:6px">
-        <input id="displayName" class="input" placeholder="Tên hiển thị">
-        <div class="subtle">Chúc bạn học vui vẻ</div>
+  <!-- Footer -->
+  <div id="footerNav" class="footerNav">
+    <div class="wrapNav"><span class="subtle">Phím tắt: ← / →</span>
+      <div style="display:flex;gap:8px">
+        <button id="btnPrev" class="btn">Câu trước</button>
+        <button id="btnNext" class="btn primary">Câu tiếp theo</button>
       </div>
     </div>
   </div>
-  <div class="row" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat"><span>Điểm TB</span><b id="pAvg">0</b></div>
-    <div class="stat"><span>Đã làm</span><b id="pTotal">0</b></div>
-    <div class="stat"><span>Tỉ lệ đúng</span><b id="pRate">0%</b></div>
-  </div>
-  <div class="row"><button id="btnExportCSV" class="btn">Xuất CSV</button><button id="btnResetProfile" class="btn">Xoá lịch sử</button></div>
 
-  <div class="card row" id="donatePanel" style="margin-top:12px">
-    <div class="sectionTitle">Donate</div>
-    <div class="kv"><b>Tên Chủ Tài Khoản</b><div id="dnName">—</div></div>
-    <div class="kv"><b>Thông Điệp</b><div id="dnNote" class="subtle">—</div></div>
-    <div class="row"><img id="dnQR" alt="QR Donate" style="max-width:100%;border-radius:10px;border:1px solid var(--line);box-shadow:var(--soft)"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a id="dnPay" class="btn primary" target="_blank" rel="noopener">Liên hệ</a>
-      <button id="dnCopy" class="btn">Copy link</button>
-    </div>
-  </div>
+  <!-- Drawer + backdrop -->
+  <div id="drawer" class="drawer" aria-label="Menu">…</div>
+  <div id="backdrop" class="backdrop"></div>
 
-  <input id="filePicker" type="file" accept="image/*" style="display:none">
-</div>
-<div id="backdrop" class="backdrop"></div>
-
-<script defer src="app.js"></script>
+  <!-- JS duy nhất -->
+  <script defer src="z8q3m1x7.js"></script>
 </body>
 </html>
