@@ -181,20 +181,11 @@ function diffCompact(a,b,maxSameRun=28){
   while(j<n){flushSame();buf.push(`<span class="ins">${esc(B[j++])}</span>`)}
   flushSame();return buf.join("")
 }
-function diffWriting(userText,revisionText,severity="near"){
-  const A=tokenize(userText),B=tokenize(revisionText);
-  const m=A.length,n=B.length;const dp=[...Array(m+1)].map(()=>Array(n+1).fill(0));
-  for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)
-    dp[i][j]=(A[i]===B[j])?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
-  let i=0,j=0,buf=[];
-  const mark=t=>(t.trim()==="")?esc(t):`<span class="${severity}">${esc(t)}</span>`;
-  while(i<m&&j<n){
-    if(A[i]===B[j]){buf.push(esc(B[j]));i++;j++}
-    else if(dp[i+1][j]>=dp[i][j+1]){i++}
-    else{buf.push(mark(B[j]));j++}
-  }
-  while(j<n){buf.push(mark(B[j++]))}
-  return buf.join("")
+// === Hiển thị IELTS 4 tiêu chí: tô nguyên đoạn theo band, không gạch xoá
+function diffWriting(userText, revisionText, severity){
+  const text = (revisionText && revisionText.trim().length ? revisionText : userText) || "";
+  const safe = esc(text).replace(/\r?\n/g, "<br>");
+  return `<div class="ielts-colored ${severity}">${safe}</div>`;
 }
 function similarity(a,b){
   const tok=s=>new Set((s||"").toLowerCase().match(/[a-z']+/g)||[]);
@@ -281,30 +272,56 @@ function capByMode(text,mode){
   }
   return{cap,m}
 }
-function showGradingResult(userText,js,headEl,diffEl,breakdownEl,label,mode){
-  const baseBand=bandFromScore(js.overall_score);
-  const {cap,m}=capByMode(userText,mode||null);
-  let band=Math.min(baseBand,cap);
-  let adjScore=js.overall_score;
-  if(baseBand>band){adjScore=Math.max(0,Math.round(js.overall_score*(band/baseBand)))}
-  const sim=similarity(userText,js.suggest_revision||"");
-  headEl.innerHTML=`<b>${label}: ${adjScore} — Band ${band.toFixed(1)}</b> <span class="subtle">(${m.wordCount}w, ${m.sentCount}s, TTR ${(m.ttr||0).toFixed(2)})</span>${sim>=0.92?" • Ít chỉnh":""}`;
-  const finalRev=(sim>=0.92)?userText:(js.suggest_revision||userText);
-  const isWriting=(mode==="spoken"||mode==="task1"||mode==="task2");
-  diffEl.className="diff mono scrollBox "+(isWriting?"writing":"simple");
-  if(isWriting){
-    const sev=(band>=7?"good":(band>=5?"near":"bad"));
-    diffEl.innerHTML=diffWriting(userText,finalRev,sev)
-  }else{
-    diffEl.innerHTML=diffCompact(userText,finalRev)
-  }
-  const c=js.criteria||{};
-  breakdownEl.innerHTML=`
-    <div class="card row"><b>Grammar</b>: ${c.grammar?.score??0}/25<div class="subtle">${esc(c.grammar?.explain_vi||"")}</div><div class="mono">${esc(c.grammar?.suggest||"")}</div></div>
-    <div class="card row"><b>Vocabulary</b>: ${c.vocabulary?.score??0}/25<div class="subtle">${esc(c.vocabulary?.explain_vi||"")}</div><div class="mono">${esc(c.vocabulary?.suggest||"")}</div></div>
-    <div class="card row"><b>Coherence</b>: ${c.coherence?.score??0}/25<div class="subtle">${esc(c.coherence?.explain_vi||"")}</div><div class="mono">${esc(c.coherence?.suggest||"")}</div></div>
-    <div class="card row"><b>Task/Complexity</b>: ${c.task?.score??0}/25<div class="subtle">${esc(c.task?.explain_vi||"")}</div><div class="mono">${esc(c.task?.suggest||"")}</div></div>
-    ${Array.isArray(js.errors)&&js.errors.length?`<div class="card row"><b>Lỗi</b><div>${js.errors.map(e=>`<span class="errtag mono">[${esc(e.type)}] "${esc(e.from)}" → "${esc(e.to)}" — ${esc(e.explain_vi)}</span>`).join("")}</div></div>`:""}
+function showGradingResult(userText, js, headEl, diffEl, breakdownEl, label, mode){
+  const baseBand = bandFromScore(js.overall_score);
+  const {cap,m} = capByMode(userText, mode || null);
+  let band = Math.min(baseBand, cap);
+  let adjScore = js.overall_score;
+  if (baseBand > band) adjScore = Math.max(0, Math.round(js.overall_score * (band/baseBand)));
+
+  const sim = similarity(userText, js.suggest_revision || "");
+  headEl.innerHTML =
+    `<b>${label}: ${adjScore} — Band ${band.toFixed(1)}</b> ` +
+    `<span class="subtle">(${m.wordCount}w, ${m.sentCount}s, TTR ${(m.ttr||0).toFixed(2)})</span>` +
+    (sim>=0.92 ? " • Ít chỉnh" : "");
+
+  const finalRev = (sim>=0.92) ? userText : (js.suggest_revision || userText);
+
+  // 👉 coi bài chấm 4 tiêu chí là "writing" để tô Đỏ/Vàng/Xanh
+  const isWriting = (mode !== "simple");
+  const sev = (band >= 7 ? "good" : (band >= 5 ? "near" : "bad"));
+
+  diffEl.className = "diff mono scrollBox " + (isWriting ? "writing" : "simple");
+  diffEl.innerHTML = isWriting ? diffWriting(userText, finalRev, sev)
+                               : diffCompact(userText, finalRev);
+
+  const c = js.criteria || {};
+  breakdownEl.innerHTML = `
+    <div class="card row"><b>Grammar</b>: ${c.grammar?.score??0}/25
+      <div class="subtle">${esc(c.grammar?.explain_vi||"")}</div>
+      <div class="mono">${esc(c.grammar?.suggest||"")}</div>
+    </div>
+    <div class="card row"><b>Vocabulary</b>: ${c.vocabulary?.score??0}/25
+      <div class="subtle">${esc(c.vocabulary?.explain_vi||"")}</div>
+      <div class="mono">${esc(c.vocabulary?.suggest||"")}</div>
+    </div>
+    <div class="card row"><b>Coherence</b>: ${c.coherence?.score??0}/25
+      <div class="subtle">${esc(c.coherence?.explain_vi||"")}</div>
+      <div class="mono">${esc(c.coherence?.suggest||"")}</div>
+    </div>
+    <div class="card row"><b>Task/Complexity</b>: ${c.task?.score??0}/25
+      <div class="subtle">${esc(c.task?.explain_vi||"")}</div>
+      <div class="mono">${esc(c.task?.suggest||"")}</div>
+    </div>
+    ${
+      Array.isArray(js.errors) && js.errors.length
+        ? `<div class="card row"><b>Lỗi</b><div>${
+            js.errors.map(e =>
+              `<span class="errtag mono">[${esc(e.type)}] "${esc(e.from)}" → "${esc(e.to)}" — ${esc(e.explain_vi)}</span>`
+            ).join("")
+          }</div></div>`
+        : ""
+    }
   `;
 }
 // ===== Simple/IELTS graders =====
@@ -405,7 +422,48 @@ async function gradeSimpleSmart(vi, en){
     structure: guessStructure(en)
   };
 }
+
 // ===== Buttons: Practice =====
+// === Chấm IELTS (4 tiêu chí) cho phần Luyện tập ===
+$("#btnGradeIELTS").onclick = async () => {
+  const en = ($("#answer").value || "").trim();
+  if (!en) { $("#hint").textContent = "Bạn chưa nhập bản dịch."; return; }
+
+  try {
+    setBusy(true);
+    $("#hint").textContent = "Đang chấm IELTS (4 tiêu chí)...";
+    $("#gradeHeader").textContent = "Đang chấm...";
+
+    // dùng đúng schema đã có trong code: IELTS_WR_SYS
+    const raw = await callOpenAI(
+      IELTS_WR_SYS,
+      `PROMPT:\n[PRACTICE]\n\nESSAY:\n${en}`,
+      900
+    );
+    const js = parseJSON(raw);
+    if (!js || !js.criteria) throw "Kết quả không hợp lệ từ model.";
+
+    // hiển thị kết quả giống các chỗ chấm khác
+    showGradingResult(
+      en,
+      js,
+      $("#gradeHeader"),   // header
+      $("#gradeDiff"),     // diff
+      $("#gradeBreakdown"),// breakdown
+      "IELTS Overall",     // nhãn
+      null                 // mode
+    );
+
+    $("#hint").textContent = "";
+  } catch (e) {
+    $("#gradeHeader").textContent = "Lỗi: " + e;
+    $("#gradeDiff").innerHTML = "";
+    $("#gradeBreakdown").innerHTML = "";
+    $("#hint").textContent = "Không chấm được 4 tiêu chí.";
+  } finally {
+    setBusy(false);
+  }
+};
 $("#btnUseManual").onclick=()=>{
   const raw=($("#manualVI").value||"").trim();
   if(!raw){$("#manualHint").textContent="Bạn chưa nhập nội dung.";return}
