@@ -81,3 +81,14 @@ body{
 section.card, section.grid, .card.row, .row{
   overflow: visible;
 }
+/* ===== IELTS band colors (block highlight) ===== */
+.diff.writing .ielts-colored{
+  display:block;
+  white-space:pre-wrap;
+  padding:10px 12px;
+  border-radius:10px;
+  line-height:1.6;
+}
+.diff.writing .ielts-colored.bad  { background:rgba(255,59,48,.18);  outline:1px dashed rgba(255,59,48,.35); }
+.diff.writing .ielts-colored.near { background:rgba(255,204,0,.18);  outline:1px dashed rgba(255,204,0,.35); }
+.diff.writing .ielts-colored.good { background:rgba(52,199,89,.18); outline:1px dashed rgba(52,199,89,.35); }
