@@ -48,7 +48,7 @@
         <div id="viBox" class="boxVI mono limit10">—</div>
 
         <div class="row">
-          <div class="sectionTitle">Nhập Đáp Án Ở Đây Bạn Nhé🥰</div>
+          <div class="sectionTitle">Đáp Án</div>
           <textarea id="answer" class="mono" placeholder="Gõ tiếng Anh ở đây..."></textarea>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button id="btnTranslateNow" class="btn">Xem mẫu câu tham khảo</button>
@@ -417,7 +417,7 @@
   <button id="chat-toggle"
     style="background:#0a7cff;color:#fff;border:none;padding:10px 14px;border-radius:999px;
            cursor:pointer;font-family:sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25);">
-    💬 Hỗ trợ
+    💬 Chat cộng đồng
   </button>
 
   <div id="chat-box" style="display:none;position:absolute;top:42px;right:0;width:340px;height:460px;
@@ -425,7 +425,7 @@
     <div id="chat-header" style="background:#0a7cff;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:bold;">
       <span>Chat Hỗ Trợ</span>
       <div>
-        <button id="chat-clear" style="background:transparent;color:#fff;border:none;cursor:pointer;"></button>
+        <button id="chat-clear" style="background:transparent;color:#fff;border:none;cursor:pointer;">.</button>
         <button id="chat-close" style="background:transparent;color:#fff;border:none;cursor:pointer;">✖</button>
       </div>
     </div>
@@ -529,7 +529,7 @@
     else{ bubble.innerHTML=esc(d.text); }
 
     const bar=document.createElement('div'); bar.className='react-bar';
-    const pickBtn=document.createElement('button'); pickBtn.className='react-btn'; pickBtn.textContent='🙂';
+    const pickBtn=document.createElement('button'); pickBtn.className='react-btn'; pickBtn.textContent='❤️';
     const sum=document.createElement('div'); sum.className='react-summary'; updateSummary(sum,d.reactions||{});
     pickBtn.onclick=(ev)=>{ev.stopPropagation(); pickerForMsgId=key; const r=pickBtn.getBoundingClientRect();
       picker.style.left=(r.right-picker.offsetWidth)+'px'; picker.style.top=(r.bottom+6)+'px'; picker.style.display='block';};
