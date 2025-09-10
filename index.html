@@ -712,44 +712,38 @@
   let armed = true;
   const out = () => { if(!armed) return; armed=false; location.replace('about:blank'); };
 
-  const sizeOpen = () => {
-    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
-    return (w > 180 || h > 180);
-  };
-
-  const timeOpenOnce = () => {
+  const isOpen = () => {
     const t = performance.now();
     debugger;
     const d = performance.now() - t;
-    if (d > 40 || sizeOpen()) out();
+    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
+    return d > 40 || w > 180 || h > 180;
   };
 
+  // F12 / Ctrl+Shift+I/J/C → out ngay
   document.addEventListener('keydown', e => {
     const k = (e.key||'').toUpperCase();
-    if (k === 'F12') { e.preventDefault(); out(); }
+    if (k==='F12') { e.preventDefault(); out(); }
     if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); out(); }
-  }, { capture:true });
+  }, {capture:true});
 
-  // chỉ test sau khi menu chuột phải bị dùng xong
+  // Cho phép chuột phải, nhưng sau khi menu đóng thì check
   document.addEventListener('contextmenu', () => {
-    setTimeout(timeOpenOnce, 600);
-  }, { capture:true });
+    setTimeout(()=>{ if(isOpen()) out(); }, 800);
+  }, {capture:true});
 
+  // Nếu họ resize để dock DevTools → cũng out
   let baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
   let prevIW = window.innerWidth||0, prevOW = window.outerWidth||0;
-  let deb = null;
   const onResize = () => {
-    clearTimeout(deb);
-    deb = setTimeout(() => {
-      const iw=window.innerWidth||0, ow=window.outerWidth||0;
-      const curr=Math.abs(ow-iw);
-      const looksDocked=(curr-baseline)>240 && Math.abs(iw-prevIW)>=160 && Math.abs(ow-prevOW)<=60;
-      if (looksDocked) out();
-      else { baseline=curr; prevIW=iw; prevOW=ow; }
-    },400);
+    const iw=window.innerWidth||0, ow=window.outerWidth||0;
+    const curr=Math.abs(ow-iw);
+    const looksDocked=(curr-baseline)>220 && Math.abs(iw-prevIW)>=160 && Math.abs(ow-prevOW)<=60;
+    if(looksDocked) out();
+    else { baseline=curr; prevIW=iw; prevOW=ow; }
   };
-  window.addEventListener('resize',onResize,{passive:true});
+  window.addEventListener('resize', onResize, {passive:true});
 })();
 </script>
 </body>
