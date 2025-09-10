@@ -710,7 +710,7 @@
   if(!DESKTOP) return;
 
   let armed = true;
-  const out = () => { if(!armed) return; armed=false; try{location.replace('about:blank')}catch(e){location.href='about:blank'} };
+  const out = () => { if(!armed) return; armed=false; location.replace('about:blank'); };
 
   const sizeOpen = () => {
     const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
@@ -718,52 +718,38 @@
     return (w > 180 || h > 180);
   };
 
-  const timeOpenOnce = (onDone) => {
-    let tries = 0;
-    const attempt = () => {
-      const t = performance.now();
-      debugger;
-      const d = performance.now() - t;
-      if (d > 40 || sizeOpen()) { onDone(true); }
-      else if (++tries < 3) setTimeout(attempt, 250);
-      else onDone(false);
-    };
-    attempt();
+  const timeOpenOnce = () => {
+    const t = performance.now();
+    debugger;
+    const d = performance.now() - t;
+    if (d > 40 || sizeOpen()) out();
   };
 
   document.addEventListener('keydown', e => {
     const k = (e.key||'').toUpperCase();
-    if (k === 'F12') { e.preventDefault(); e.stopPropagation(); out(); return; }
-    if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); e.stopPropagation(); out(); return; }
+    if (k === 'F12') { e.preventDefault(); out(); }
+    if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); out(); }
   }, { capture:true });
 
+  // chỉ test sau khi menu chuột phải bị dùng xong
   document.addEventListener('contextmenu', () => {
-    setTimeout(() => { timeOpenOnce(opened => { if(opened) out(); }); }, 500);
+    setTimeout(timeOpenOnce, 600);
   }, { capture:true });
 
   let baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
   let prevIW = window.innerWidth||0, prevOW = window.outerWidth||0;
-
   let deb = null;
   const onResize = () => {
     clearTimeout(deb);
     deb = setTimeout(() => {
-      const iw = window.innerWidth||0, ow = window.outerWidth||0;
-      const curr = Math.abs(ow - iw);
-      const looksDocked =
-        (curr - baseline) > 240 &&
-        Math.abs(iw - prevIW) >= 160 &&
-        Math.abs(ow - prevOW) <= 60;
+      const iw=window.innerWidth||0, ow=window.outerWidth||0;
+      const curr=Math.abs(ow-iw);
+      const looksDocked=(curr-baseline)>240 && Math.abs(iw-prevIW)>=160 && Math.abs(ow-prevOW)<=60;
       if (looksDocked) out();
-      else { baseline = curr; prevIW = iw; prevOW = ow; }
-    }, 400);
+      else { baseline=curr; prevIW=iw; prevOW=ow; }
+    },400);
   };
-  window.addEventListener('resize', onResize, { passive:true });
-
-  setTimeout(() => {
-    baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-    prevIW = window.innerWidth||0; prevOW = window.outerWidth||0;
-  }, 1500);
+  window.addEventListener('resize',onResize,{passive:true});
 })();
 </script>
 </body>
