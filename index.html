@@ -706,39 +706,35 @@
 <!-- === /QUICK RAIL === -->
 <script>
 (()=>{ 
-  const ENABLE_MOBILE=false;
-  const isMobile=(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))||(navigator.maxTouchPoints>0&&Math.max(screen.width,screen.height)<1024);
-  if(isMobile&&!ENABLE_MOBILE) return;
+  const DESKTOP = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  if(!DESKTOP) return;
 
-  let skip=0,reloading=false,lastVVH=window.visualViewport?window.visualViewport.height:0;
-  const isEditable=el=>!!el&&(el.isContentEditable||['input','textarea','select','option'].includes((el.tagName||'').toLowerCase())||!!el.closest?.('input,textarea,select,[contenteditable=""],[contenteditable="true"]'));
-  const once=()=>{
-    if(reloading) return;
-    reloading=true;
-    const k='__dt_reload_once__';
-    if(sessionStorage.getItem(k)) return;
-    sessionStorage.setItem(k,'1');
-    location.reload();
+  let armed = true;
+  const eject = () => {
+    if(!armed) return;
+    armed = false;
+    try { location.replace('about:blank'); } catch(e) { location.href = 'about:blank'; }
   };
-  const onResize=()=>{
-    if(skip) return;
-    const iw=window.innerWidth||0, ow=window.outerWidth||0;
-    const wDiff=Math.abs(ow-iw);
-    if(wDiff>200) once();
+
+  const sizeCheck = () => {
+    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
+    if (w > 180 || h > 180) eject();
   };
-  const armSkip=(ms=1200)=>{ skip=1; setTimeout(()=>{skip=0;},ms); };
-  window.addEventListener('focusin',e=>{ if(isEditable(e.target)) armSkip(1500); },{passive:true});
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize',()=>{
-      const h=window.visualViewport.height;
-      const dh=lastVVH-h;
-      lastVVH=h;
-      if(dh>80) armSkip(1500);
-    },{passive:true});
-  }
-  let t=setInterval(onResize,1000);
-  window.addEventListener('resize',onResize,{passive:true});
-  window.addEventListener('beforeunload',()=>{ clearInterval(t); },{passive:true});
+
+  const timeCheck = () => {
+    const t = performance.now();
+    debugger;
+    const d = performance.now() - t;
+    if (d > 40) eject();
+  };
+
+  const run = () => { sizeCheck(); timeCheck(); };
+  run();
+  const i1 = setInterval(run, 900);
+  window.addEventListener('resize', sizeCheck, { passive:true });
+  window.addEventListener('focus', run, { passive:true });
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) run(); }, { passive:true });
 })();
 </script>
 </body>
