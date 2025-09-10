@@ -708,43 +708,26 @@
 <!-- === /QUICK RAIL === -->
   <script>
 (()=>{ 
-  const strict=false;
-  const isMobile = (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) || (navigator.maxTouchPoints>0 && Math.max(screen.width,screen.height)<1024);
-
-  const isEditable = (el)=>{
+  const isEditable = el=>{
     if(!el) return false;
-    if (el.isContentEditable) return true;
+    if(el.isContentEditable) return true;
     const tag=(el.tagName||'').toLowerCase();
-    if (['input','textarea','select','option'].includes(tag)) return true;
+    if(['input','textarea','select','option'].includes(tag)) return true;
     return !!el.closest?.('input,textarea,select,[contenteditable=""],[contenteditable="true"]');
   };
 
-  const showBanner = ()=>{
-    if (document.getElementById('devtools-banner')) return;
-    const b=document.createElement('div');
-    b.id='devtools-banner';
-    b.setAttribute('style','position:fixed;left:12px;right:12px;top:12px;z-index:2147483647;background:rgba(10,14,25,.9);color:rgb(255,255,255);font:600 14px/1.3 system-ui,-apple-system,Segoe UI,Roboto;border-radius:10px;padding:10px 12px;pointer-events:none;text-align:center');
-    b.textContent='⚠️ DevTools đang mở. Đóng để tiếp tục an toàn.';
-    document.body.appendChild(b);
-    setTimeout(()=>{ b.remove(); }, 3000);
-  };
-
-  const showShield = ()=>{
-    if(isMobile){ showBanner(); return; }
-    if(document.getElementById('devtools-shield')) return;
-    const d=document.createElement('div');
-    d.id='devtools-shield';
-    d.setAttribute('style','position:fixed;inset:0;z-index:2147483647;background:rgba(10,14,25,.96);color:rgb(255,255,255);display:flex;align-items:center;justify-content:center;font:600 16px/1.6 system-ui,-apple-system,Segoe UI,Roboto;text-align:center;padding:24px;backdrop-filter:blur(2px)');
-    d.innerHTML='<div style="pointer-events:auto"><div style="font-size:22px;margin-bottom:8px">⚠️ Developer Tools bị vô hiệu hoá</div><div>Vui lòng đóng DevTools để tiếp tục.</div><button id="devtools-close" style="margin-top:16px;padding:8px 14px;border:0;border-radius:8px;background:rgb(255,255,255);color:rgb(17,17,17);cursor:pointer;font-weight:700">Tôi đã đóng</button></div>';
-    d.style.pointerEvents='none';
-    document.body.appendChild(d);
-    const btn=document.getElementById('devtools-close');
-    if(btn){ btn.addEventListener('click',()=>{ d.remove(); }); btn.parentElement.parentElement.style.pointerEvents='auto'; }
-  };
-
-  const nuke = ()=>{
-    if(strict && !isMobile){ try{ location.replace('about:blank'); }catch(_){} return; }
-    showShield();
+  const toast = (msg)=>{
+    let t=document.getElementById('devtools-toast');
+    if(!t){
+      t=document.createElement('div');
+      t.id='devtools-toast';
+      t.setAttribute('style','position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483647;padding:10px 12px;border-radius:10px;background:rgba(10,14,25,.92);color:rgb(255,255,255);font:600 14px/1.35 system-ui,-apple-system,Segoe UI,Roboto;text-align:center;pointer-events:none');
+      document.body.appendChild(t);
+    }
+    t.textContent=msg||'⚠️ DevTools có thể đang mở';
+    clearTimeout(t.__hid);
+    t.style.opacity='1';
+    t.__hid=setTimeout(()=>{t.style.opacity='0'},2500);
   };
 
   document.addEventListener('contextmenu', e=>{
@@ -753,49 +736,27 @@
 
   document.addEventListener('keydown', e=>{
     const k=(e.key||'').toUpperCase();
-    if (k==='F12') { e.preventDefault(); e.stopPropagation(); nuke(); return; }
-    if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); e.stopPropagation(); nuke(); return; }
-    if ((e.ctrlKey||e.metaKey) && k==='U') { e.preventDefault(); e.stopPropagation(); return; }
+    if(k==='F12'){ e.preventDefault(); e.stopPropagation(); toast('⚠️ DevTools bị chặn'); return; }
+    if((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)){ e.preventDefault(); e.stopPropagation(); toast('⚠️ DevTools bị chặn'); return; }
+    if((e.ctrlKey||e.metaKey) && k==='U'){ e.preventDefault(); e.stopPropagation(); return; }
   }, {capture:true});
 
-  let hit1=false, hit2=false;
-  const sizeCheck = ()=>{
-    const wDiff=Math.abs((window.outerWidth||0)-(window.innerWidth||0));
-    const hDiff=Math.abs((window.outerHeight||0)-(window.innerHeight||0));
-    const trig=(wDiff>200 || hDiff>200);
-    if(trig && hit1){ hit2=true; nuke(); }
-    else if(trig){ hit1=true; setTimeout(()=>{ hit1=false; }, 1200); }
+  let hits=0;
+  const sizeCheck=()=>{
+    const ow=window.outerWidth||0, iw=window.innerWidth||0;
+    const oh=window.outerHeight||0, ih=window.innerHeight||0;
+    const trig=(Math.abs(ow-iw)>260 || Math.abs(oh-ih)>260);
+    if(trig){ hits++; if(hits>=3){ toast('⚠️ DevTools có thể đang mở'); hits=0; } }
+    else { hits=0; }
   };
 
-  let tHit1=false, tHit2=false;
-  const timeCheck = ()=>{
-    const t=performance.now(); debugger; const d=performance.now()-t;
-    const trig=(d>160);
-    if(trig && tHit1){ tHit2=true; nuke(); }
-    else if(trig){ tHit1=true; setTimeout(()=>{ tHit1=false; }, 1500); }
-  };
-
-  let fHit1=false, fHit2=false;
-  const funcCheck = ()=>{
-    try{
-      const f=Function('debugger');
-      const t=performance.now(); f(); const d=performance.now()-t;
-      const trig=(d>160);
-      if(trig && fHit1){ fHit2=true; nuke(); }
-      else if(trig){ fHit1=true; setTimeout(()=>{ fHit1=false; }, 1500); }
-    }catch(_){}
-  };
-
-  if(!isMobile){ sizeCheck(); funcCheck(); }
+  sizeCheck();
   const i1=setInterval(sizeCheck,1200);
-  const i2=setInterval(timeCheck,1400);
-  const i3=setInterval(funcCheck,1600);
-
   window.addEventListener('resize', sizeCheck, {passive:true});
-  window.addEventListener('focus', timeCheck, {passive:true});
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) timeCheck(); }, {passive:true});
+  window.addEventListener('focus', sizeCheck, {passive:true});
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) sizeCheck(); }, {passive:true});
 
-  window.__devtoolsGuardCleanup__=()=>{ clearInterval(i1); clearInterval(i2); clearInterval(i3); document.getElementById('devtools-shield')?.remove(); document.getElementById('devtools-banner')?.remove(); };
+  window.__devtoolsGuardCleanup__=()=>{ clearInterval(i1); document.getElementById('devtools-toast')?.remove(); };
 })();
 </script>
 </body>
