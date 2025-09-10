@@ -708,55 +708,43 @@
 <!-- === /QUICK RAIL === -->
   <script>
 (()=>{ 
-  const isEditable = el=>{
-    if(!el) return false;
-    if(el.isContentEditable) return true;
-    const tag=(el.tagName||'').toLowerCase();
-    if(['input','textarea','select','option'].includes(tag)) return true;
-    return !!el.closest?.('input,textarea,select,[contenteditable=""],[contenteditable="true"]');
-  };
+  let armed=true, sHit=false, tHit=false, fHit=false;
+  const isMobile = (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) || (navigator.maxTouchPoints>0 && Math.max(screen.width,screen.height)<1024);
+  const eject=()=>{ if(!armed) return; armed=false; try{ location.replace('about:blank'); }catch(_){ location.href='about:blank'; } };
 
-  const toast = (msg)=>{
-    let t=document.getElementById('devtools-toast');
-    if(!t){
-      t=document.createElement('div');
-      t.id='devtools-toast';
-      t.setAttribute('style','position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483647;padding:10px 12px;border-radius:10px;background:rgba(10,14,25,.92);color:rgb(255,255,255);font:600 14px/1.35 system-ui,-apple-system,Segoe UI,Roboto;text-align:center;pointer-events:none');
-      document.body.appendChild(t);
-    }
-    t.textContent=msg||'⚠️ DevTools có thể đang mở';
-    clearTimeout(t.__hid);
-    t.style.opacity='1';
-    t.__hid=setTimeout(()=>{t.style.opacity='0'},2500);
-  };
-
-  document.addEventListener('contextmenu', e=>{
-    if(!isEditable(e.target)) { e.preventDefault(); e.stopPropagation(); }
-  }, {capture:true});
-
-  document.addEventListener('keydown', e=>{
-    const k=(e.key||'').toUpperCase();
-    if(k==='F12'){ e.preventDefault(); e.stopPropagation(); toast('⚠️ DevTools bị chặn'); return; }
-    if((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)){ e.preventDefault(); e.stopPropagation(); toast('⚠️ DevTools bị chặn'); return; }
-    if((e.ctrlKey||e.metaKey) && k==='U'){ e.preventDefault(); e.stopPropagation(); return; }
-  }, {capture:true});
-
-  let hits=0;
   const sizeCheck=()=>{
-    const ow=window.outerWidth||0, iw=window.innerWidth||0;
-    const oh=window.outerHeight||0, ih=window.innerHeight||0;
-    const trig=(Math.abs(ow-iw)>260 || Math.abs(oh-ih)>260);
-    if(trig){ hits++; if(hits>=3){ toast('⚠️ DevTools có thể đang mở'); hits=0; } }
-    else { hits=0; }
+    if(isMobile) return;
+    const w=Math.abs((window.outerWidth||0)-(window.innerWidth||0));
+    const h=Math.abs((window.outerHeight||0)-(window.innerHeight||0));
+    const trig=(w>220 || h>220);
+    if(trig){ if(sHit) eject(); else { sHit=true; setTimeout(()=>sHit=false,1200); } }
   };
 
-  sizeCheck();
-  const i1=setInterval(sizeCheck,1200);
-  window.addEventListener('resize', sizeCheck, {passive:true});
-  window.addEventListener('focus', sizeCheck, {passive:true});
-  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) sizeCheck(); }, {passive:true});
+  const timeCheck=()=>{
+    const t=performance.now();
+    debugger;
+    const d=performance.now()-t;
+    const trig=(d>160);
+    if(trig){ if(tHit) eject(); else { tHit=true; setTimeout(()=>tHit=false,1500); } }
+  };
 
-  window.__devtoolsGuardCleanup__=()=>{ clearInterval(i1); document.getElementById('devtools-toast')?.remove(); };
+  const funcCheck=()=>{
+    try{
+      const f=Function('debugger');
+      const t=performance.now(); f(); const d=performance.now()-t;
+      const trig=(d>160);
+      if(trig){ if(fHit) eject(); else { fHit=true; setTimeout(()=>fHit=false,1500); } }
+    }catch(_){}
+  };
+
+  sizeCheck(); funcCheck();
+  const i1=setInterval(sizeCheck,1200);
+  const i2=setInterval(timeCheck,1400);
+  const i3=setInterval(funcCheck,1600);
+  window.addEventListener('resize',sizeCheck,{passive:true});
+  window.addEventListener('focus',timeCheck,{passive:true});
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) timeCheck(); },{passive:true});
+  window.__devtoolsGuardCleanup__=()=>{ clearInterval(i1); clearInterval(i2); clearInterval(i3); };
 })();
 </script>
 </body>
