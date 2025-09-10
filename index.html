@@ -709,8 +709,23 @@
   <script>
 (()=>{ 
   let armed=true, sHit=false, tHit=false, fHit=false;
-  const isMobile = (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) || (navigator.maxTouchPoints>0 && Math.max(screen.width,screen.height)<1024);
-  const eject=()=>{ if(!armed) return; armed=false; try{ location.replace('about:blank'); }catch(_){ location.href='about:blank'; } };
+  const isMobile = (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) 
+    || (navigator.maxTouchPoints>0 && Math.max(screen.width,screen.height)<1024);
+
+  const isEditable = (el)=>{
+    if(!el) return false;
+    if(el.isContentEditable) return true;
+    const tag=(el.tagName||'').toLowerCase();
+    if(['input','textarea','select','option'].includes(tag)) return true;
+    return !!el.closest?.('input,textarea,select,[contenteditable=""],[contenteditable="true"]');
+  };
+
+  const eject=()=>{
+    if(!armed) return;
+    armed=false;
+    try{ location.replace('about:blank'); }
+    catch(_){ location.href='about:blank'; }
+  };
 
   const sizeCheck=()=>{
     if(isMobile) return;
@@ -721,19 +736,21 @@
   };
 
   const timeCheck=()=>{
+    const active=document.activeElement;
+    if(isEditable(active)) return; // đang nhập => bỏ qua
     const t=performance.now();
     debugger;
     const d=performance.now()-t;
-    const trig=(d>160);
-    if(trig){ if(tHit) eject(); else { tHit=true; setTimeout(()=>tHit=false,1500); } }
+    if(d>160){ if(tHit) eject(); else { tHit=true; setTimeout(()=>tHit=false,1500); } }
   };
 
   const funcCheck=()=>{
+    const active=document.activeElement;
+    if(isEditable(active)) return; // đang nhập => bỏ qua
     try{
       const f=Function('debugger');
       const t=performance.now(); f(); const d=performance.now()-t;
-      const trig=(d>160);
-      if(trig){ if(fHit) eject(); else { fHit=true; setTimeout(()=>fHit=false,1500); } }
+      if(d>160){ if(fHit) eject(); else { fHit=true; setTimeout(()=>fHit=false,1500); } }
     }catch(_){}
   };
 
@@ -741,10 +758,16 @@
   const i1=setInterval(sizeCheck,1200);
   const i2=setInterval(timeCheck,1400);
   const i3=setInterval(funcCheck,1600);
+
   window.addEventListener('resize',sizeCheck,{passive:true});
   window.addEventListener('focus',timeCheck,{passive:true});
-  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) timeCheck(); },{passive:true});
-  window.__devtoolsGuardCleanup__=()=>{ clearInterval(i1); clearInterval(i2); clearInterval(i3); };
+  document.addEventListener('visibilitychange',()=>{ 
+    if(!document.hidden) timeCheck(); 
+  },{passive:true});
+
+  window.__devtoolsGuardCleanup__=()=>{
+    clearInterval(i1); clearInterval(i2); clearInterval(i3);
+  };
 })();
 </script>
 </body>
