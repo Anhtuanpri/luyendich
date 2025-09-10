@@ -705,80 +705,65 @@
 </script>
 <!-- === /QUICK RAIL === -->
 <script>
-(()=> {
-  // Kill-switch: ?nodt=1 hoặc localStorage.setItem('DT_DISABLE','1')
-  if (new URLSearchParams(location.search).get('nodt') === '1' || localStorage.getItem('DT_DISABLE') === '1') return;
+(()=>{ 
+  const DESKTOP = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  if(!DESKTOP) return;
 
-  const isDesktop = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-  if (!isDesktop) return;
+  let armed = true;
+  const out = () => { if(!armed) return; armed=false; try{location.replace('about:blank')}catch(e){location.href='about:blank'} };
 
-  let armed = false;             // chỉ bật sau khi ổn định
-  let baseline = 0;              // chênh lệch outerWidth - innerWidth ban đầu
-  let prevIW = window.innerWidth || 0;
-  let prevOW = window.outerWidth || 0;
-
-  let strike = 0;
-  let strikeTimer = null;
-
-  const DEVTOOLS_W_DIFF_INCREASE = 240; // chênh lệch tăng thêm tối thiểu
-  const INNER_SHRINK_MIN        = 160; // innerWidth giảm tối thiểu
-  const OUTER_STABLE_MAX        = 60;  // outerWidth gần như không đổi
-
-  const reloadOnce = () => {
-    if (sessionStorage.getItem('__DT_RELOADED__')) return;
-    sessionStorage.setItem('__DT_RELOADED__', '1');
-    location.reload();
+  const sizeOpen = () => {
+    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
+    return (w > 180 || h > 180);
   };
 
-  const onResizeEnd = () => {
-    if (!armed) return;
-
-    const iw = window.innerWidth || 0;
-    const ow = window.outerWidth || 0;
-    const currDiff = Math.abs(ow - iw);
-
-    const diffChange = currDiff - baseline;
-    const iwDelta = Math.abs(iw - prevIW);
-    const owDelta = Math.abs(ow - prevOW);
-
-    const looksDocked =
-      diffChange > DEVTOOLS_W_DIFF_INCREASE &&
-      iwDelta >= INNER_SHRINK_MIN &&
-      owDelta <= OUTER_STABLE_MAX;
-
-    if (looksDocked) {
-      strike++;
-      clearTimeout(strikeTimer);
-      strikeTimer = setTimeout(() => { strike = 0; }, 1500);
-      if (strike >= 2) {
-        reloadOnce();
-        return;
-      }
-    } else {
-      // cập nhật baseline cho trạng thái bình thường mới
-      baseline = currDiff;
-      strike = 0;
-    }
-
-    prevIW = iw;
-    prevOW = ow;
+  const timeOpenOnce = (onDone) => {
+    let tries = 0;
+    const attempt = () => {
+      const t = performance.now();
+      debugger;
+      const d = performance.now() - t;
+      if (d > 40 || sizeOpen()) { onDone(true); }
+      else if (++tries < 3) setTimeout(attempt, 250);
+      else onDone(false);
+    };
+    attempt();
   };
 
-  let resizeDebounce = null;
+  document.addEventListener('keydown', e => {
+    const k = (e.key||'').toUpperCase();
+    if (k === 'F12') { e.preventDefault(); e.stopPropagation(); out(); return; }
+    if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); e.stopPropagation(); out(); return; }
+  }, { capture:true });
+
+  document.addEventListener('contextmenu', () => {
+    setTimeout(() => { timeOpenOnce(opened => { if(opened) out(); }); }, 500);
+  }, { capture:true });
+
+  let baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+  let prevIW = window.innerWidth||0, prevOW = window.outerWidth||0;
+
+  let deb = null;
   const onResize = () => {
-    clearTimeout(resizeDebounce);
-    resizeDebounce = setTimeout(onResizeEnd, 400);
+    clearTimeout(deb);
+    deb = setTimeout(() => {
+      const iw = window.innerWidth||0, ow = window.outerWidth||0;
+      const curr = Math.abs(ow - iw);
+      const looksDocked =
+        (curr - baseline) > 240 &&
+        Math.abs(iw - prevIW) >= 160 &&
+        Math.abs(ow - prevOW) <= 60;
+      if (looksDocked) out();
+      else { baseline = curr; prevIW = iw; prevOW = ow; }
+    }, 400);
   };
+  window.addEventListener('resize', onResize, { passive:true });
 
-  // Arm sau khi trang ổn định
   setTimeout(() => {
     baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-    prevIW = window.innerWidth || 0;
-    prevOW = window.outerWidth || 0;
-    armed = true;
-  }, 2000);
-
-  window.addEventListener('resize', onResize, { passive: true });
+    prevIW = window.innerWidth||0; prevOW = window.outerWidth||0;
+  }, 1500);
 })();
 </script>
 </body>
