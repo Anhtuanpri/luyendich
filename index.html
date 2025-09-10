@@ -705,36 +705,80 @@
 </script>
 <!-- === /QUICK RAIL === -->
 <script>
-(()=>{ 
-  const DESKTOP = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-  if(!DESKTOP) return;
+(()=> {
+  // Kill-switch: ?nodt=1 hoặc localStorage.setItem('DT_DISABLE','1')
+  if (new URLSearchParams(location.search).get('nodt') === '1' || localStorage.getItem('DT_DISABLE') === '1') return;
 
-  let armed = true;
-  const eject = () => {
-    if(!armed) return;
-    armed = false;
-    try { location.replace('about:blank'); } catch(e) { location.href = 'about:blank'; }
+  const isDesktop = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+  if (!isDesktop) return;
+
+  let armed = false;             // chỉ bật sau khi ổn định
+  let baseline = 0;              // chênh lệch outerWidth - innerWidth ban đầu
+  let prevIW = window.innerWidth || 0;
+  let prevOW = window.outerWidth || 0;
+
+  let strike = 0;
+  let strikeTimer = null;
+
+  const DEVTOOLS_W_DIFF_INCREASE = 240; // chênh lệch tăng thêm tối thiểu
+  const INNER_SHRINK_MIN        = 160; // innerWidth giảm tối thiểu
+  const OUTER_STABLE_MAX        = 60;  // outerWidth gần như không đổi
+
+  const reloadOnce = () => {
+    if (sessionStorage.getItem('__DT_RELOADED__')) return;
+    sessionStorage.setItem('__DT_RELOADED__', '1');
+    location.reload();
   };
 
-  const sizeCheck = () => {
-    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
-    if (w > 180 || h > 180) eject();
+  const onResizeEnd = () => {
+    if (!armed) return;
+
+    const iw = window.innerWidth || 0;
+    const ow = window.outerWidth || 0;
+    const currDiff = Math.abs(ow - iw);
+
+    const diffChange = currDiff - baseline;
+    const iwDelta = Math.abs(iw - prevIW);
+    const owDelta = Math.abs(ow - prevOW);
+
+    const looksDocked =
+      diffChange > DEVTOOLS_W_DIFF_INCREASE &&
+      iwDelta >= INNER_SHRINK_MIN &&
+      owDelta <= OUTER_STABLE_MAX;
+
+    if (looksDocked) {
+      strike++;
+      clearTimeout(strikeTimer);
+      strikeTimer = setTimeout(() => { strike = 0; }, 1500);
+      if (strike >= 2) {
+        reloadOnce();
+        return;
+      }
+    } else {
+      // cập nhật baseline cho trạng thái bình thường mới
+      baseline = currDiff;
+      strike = 0;
+    }
+
+    prevIW = iw;
+    prevOW = ow;
   };
 
-  const timeCheck = () => {
-    const t = performance.now();
-    debugger;
-    const d = performance.now() - t;
-    if (d > 40) eject();
+  let resizeDebounce = null;
+  const onResize = () => {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(onResizeEnd, 400);
   };
 
-  const run = () => { sizeCheck(); timeCheck(); };
-  run();
-  const i1 = setInterval(run, 900);
-  window.addEventListener('resize', sizeCheck, { passive:true });
-  window.addEventListener('focus', run, { passive:true });
-  document.addEventListener('visibilitychange', () => { if(!document.hidden) run(); }, { passive:true });
+  // Arm sau khi trang ổn định
+  setTimeout(() => {
+    baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+    prevIW = window.innerWidth || 0;
+    prevOW = window.outerWidth || 0;
+    armed = true;
+  }, 2000);
+
+  window.addEventListener('resize', onResize, { passive: true });
 })();
 </script>
 </body>
