@@ -6,12 +6,11 @@
   <title>The Coach: WRITING</title>
   <meta name="description" content="Luyện dịch VI→EN, tạo câu theo band, chấm IELTS 4 tiêu chí." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <!-- CSS của bạn -->
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- ==== UI GIỮ NGUYÊN NHƯ BẠN DÁN (đã đúng id/class) ==== -->
-  <!-- mình giữ nguyên cấu trúc bạn gửi, chỉ bỏ hết script inline cũ để tránh đè callOpenAI -->
+  
   <div class="container">
     <header>
       <div style="display:flex;gap:8px;align-items:center">
@@ -36,8 +35,7 @@
       </div>
     </header>
 
-    <!-- ==== CÁC SECTION GIỮ NGUYÊN NHƯ BẢN CỦA BẠN ==== -->
-    <!-- Practice -->
+    
     <section id="secPractice" class="grid two" style="margin-top:16px">
       <div class="card row">
         <div style="display:flex;justify-content:space-between;align-items:center">
@@ -612,7 +610,7 @@
 })();
 </script>
 <!-- ===== /VERIFIED BADGE ===== -->
-  <!-- === QUICK RAIL (nút nhỏ gọn) === -->
+  <!-- === QUICK RAIL  === -->
 <div id="qr-root"
      style="position:fixed; right:12px; top:50%; transform:translateY(-50%);
             z-index:9999; font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
@@ -706,68 +704,17 @@
 })();
 </script>
 <!-- === /QUICK RAIL === -->
-  <script>
+<script>
 (()=>{ 
-  let armed=true, sHit=false, tHit=false, fHit=false;
-  const isMobile = (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) 
-    || (navigator.maxTouchPoints>0 && Math.max(screen.width,screen.height)<1024);
-
-  const isEditable = (el)=>{
-    if(!el) return false;
-    if(el.isContentEditable) return true;
-    const tag=(el.tagName||'').toLowerCase();
-    if(['input','textarea','select','option'].includes(tag)) return true;
-    return !!el.closest?.('input,textarea,select,[contenteditable=""],[contenteditable="true"]');
+  const reloadOnDevtools=()=>{
+    const wDiff = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
+    const hDiff = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
+    if(wDiff > 200 || hDiff > 200){
+      location.reload(); // render lại trang khi DevTools bật
+    }
   };
-
-  const eject=()=>{
-    if(!armed) return;
-    armed=false;
-    try{ location.replace('about:blank'); }
-    catch(_){ location.href='about:blank'; }
-  };
-
-  const sizeCheck=()=>{
-    if(isMobile) return;
-    const w=Math.abs((window.outerWidth||0)-(window.innerWidth||0));
-    const h=Math.abs((window.outerHeight||0)-(window.innerHeight||0));
-    const trig=(w>220 || h>220);
-    if(trig){ if(sHit) eject(); else { sHit=true; setTimeout(()=>sHit=false,1200); } }
-  };
-
-  const timeCheck=()=>{
-    const active=document.activeElement;
-    if(isEditable(active)) return; // đang nhập => bỏ qua
-    const t=performance.now();
-    debugger;
-    const d=performance.now()-t;
-    if(d>160){ if(tHit) eject(); else { tHit=true; setTimeout(()=>tHit=false,1500); } }
-  };
-
-  const funcCheck=()=>{
-    const active=document.activeElement;
-    if(isEditable(active)) return; // đang nhập => bỏ qua
-    try{
-      const f=Function('debugger');
-      const t=performance.now(); f(); const d=performance.now()-t;
-      if(d>160){ if(fHit) eject(); else { fHit=true; setTimeout(()=>fHit=false,1500); } }
-    }catch(_){}
-  };
-
-  sizeCheck(); funcCheck();
-  const i1=setInterval(sizeCheck,1200);
-  const i2=setInterval(timeCheck,1400);
-  const i3=setInterval(funcCheck,1600);
-
-  window.addEventListener('resize',sizeCheck,{passive:true});
-  window.addEventListener('focus',timeCheck,{passive:true});
-  document.addEventListener('visibilitychange',()=>{ 
-    if(!document.hidden) timeCheck(); 
-  },{passive:true});
-
-  window.__devtoolsGuardCleanup__=()=>{
-    clearInterval(i1); clearInterval(i2); clearInterval(i3);
-  };
+  setInterval(reloadOnDevtools, 1000);
+  window.addEventListener('resize', reloadOnDevtools, {passive:true});
 })();
 </script>
 </body>
