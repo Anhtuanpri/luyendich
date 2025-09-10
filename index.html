@@ -703,48 +703,5 @@
   render();
 })();
 </script>
-<!-- === /QUICK RAIL === -->
-<script>
-(()=>{ 
-  const DESKTOP = !(/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
-  if(!DESKTOP) return;
-
-  let armed = true;
-  const out = () => { if(!armed) return; armed=false; location.replace('about:blank'); };
-
-  const isOpen = () => {
-    const t = performance.now();
-    debugger;
-    const d = performance.now() - t;
-    const w = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-    const h = Math.abs((window.outerHeight||0) - (window.innerHeight||0));
-    return d > 40 || w > 180 || h > 180;
-  };
-
-  // F12 / Ctrl+Shift+I/J/C → out ngay
-  document.addEventListener('keydown', e => {
-    const k = (e.key||'').toUpperCase();
-    if (k==='F12') { e.preventDefault(); out(); }
-    if ((e.ctrlKey||e.metaKey) && e.shiftKey && ['I','J','C'].includes(k)) { e.preventDefault(); out(); }
-  }, {capture:true});
-
-  // Cho phép chuột phải, nhưng sau khi menu đóng thì check
-  document.addEventListener('contextmenu', () => {
-    setTimeout(()=>{ if(isOpen()) out(); }, 800);
-  }, {capture:true});
-
-  // Nếu họ resize để dock DevTools → cũng out
-  let baseline = Math.abs((window.outerWidth||0) - (window.innerWidth||0));
-  let prevIW = window.innerWidth||0, prevOW = window.outerWidth||0;
-  const onResize = () => {
-    const iw=window.innerWidth||0, ow=window.outerWidth||0;
-    const curr=Math.abs(ow-iw);
-    const looksDocked=(curr-baseline)>220 && Math.abs(iw-prevIW)>=160 && Math.abs(ow-prevOW)<=60;
-    if(looksDocked) out();
-    else { baseline=curr; prevIW=iw; prevOW=ow; }
-  };
-  window.addEventListener('resize', onResize, {passive:true});
-})();
-</script>
 </body>
 </html>
