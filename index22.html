@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LexiBuilder — Bulk GPT (Collocations / Idioms / Phrasal Verbs)</title>
+<style>
+  :root{--bg:#fff; --ink:#111; --muted:#666; --line:#e9e9ee; --brand:#0b57d0; --ok:#0f7b3f; --danger:#b3261e; --warn:#b0750b; --radius:12px}
+  *{box-sizing:border-box}
+  body{margin:0; font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial; color:var(--ink); background:var(--bg)}
+  header{position:sticky; top:0; background:rgba(255,255,255,.9); backdrop-filter:saturate(1.1) blur(6px); border-bottom:1px solid var(--line)}
+  .wrap{max-width:1100px; margin:0 auto; padding:16px}
+  h1{margin:0 0 4px; font-size:20px}
+  .sub{color:var(--muted); font-size:13px}
+  .panel{background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; margin-top:14px}
+  label{display:block; font-weight:600; margin:8px 0 6px}
+  input,select,textarea{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand); box-shadow:0 0 0 4px rgba(11,87,208,.08)}
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .btn{border:1px solid var(--line); background:#fff; padding:8px 12px; border-radius:10px; cursor:pointer}
+  .btn.primary{background:var(--brand); color:#fff; border-color:var(--brand)}
+  .btn.ok{background:var(--ok); color:#fff; border-color:var(--ok)}
+  .btn.warn{background:var(--warn); color:#fff; border-color:var(--warn)}
+  .btn.danger{background:var(--danger); color:#fff; border-color:var(--danger)}
+  .small{font-size:12px; color:var(--muted)}
+  .chip{font-size:12px; padding:4px 8px; border:1px solid var(--line); border-radius:999px; color:var(--muted)}
+  .list{margin-top:10px; border-top:1px solid var(--line)}
+  .item{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line)}
+  .word{flex:1; font-weight:700}
+  details{background:#fafafa; border:1px dashed var(--line); border-radius:10px; padding:8px 10px; margin-top:6px}
+  summary{cursor:pointer; font-weight:600}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .right{margin-left:auto}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap}
+  .tab{border:1px solid var(--line); padding:6px 10px; border-radius:999px; cursor:pointer; color:#333; background:#fff}
+  .tab.active{border-color:var(--brand); color:#fff; background:var(--brand)}
+  .divider{height:1px; background:#eee; margin:10px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>LexiBuilder</h1>
+    <div class="sub">Sinh hàng loạt bằng GPT theo nhóm riêng (Collocation / Idiom / Phrasal Verb / Academic phrase). Mỗi dòng: <span class="mono">take a break  [ lưu ]  🔊</span> — Loa đọc <b>English</b>.</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- GPT BULK GENERATOR -->
+  <section class="panel">
+    <h3>1) Bộ sinh GPT (tạo số lượng lớn)</h3>
+    <div class="row3">
+      <div>
+        <label>Nhóm</label>
+        <select id="genType">
+          <option value="collocation" selected>Collocation</option>
+          <option value="idiom">Idiom</option>
+          <option value="phrasal">Phrasal verb</option>
+          <option value="academic">Academic phrase</option>
+        </select>
+      </div>
+      <div>
+        <label>Số lượng (tối đa 200)</label>
+        <input id="genCount" type="number" min="1" max="200" value="20"/>
+      </div>
+      <div>
+        <label>Band</label>
+        <select id="genBand">
+          <option>5.0–5.5</option>
+          <option selected>6.0–6.5</option>
+          <option>7.0+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <div>
+        <label>Chủ đề / ngữ cảnh</label>
+        <input id="genTopic" placeholder="education, environment, technology, health, work..."/>
+      </div>
+      <div>
+        <label>Từ khoá gợi ý (tuỳ chọn)</label>
+        <input id="genSeed" placeholder="ví dụ: risk, policy, benefit, traffic, pollution..."/>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <div>
+        <label>Author / Ai tạo ra</label>
+        <input id="genAuthor" placeholder="GPT-4o-mini (hoặc tên bạn)"/>
+      </div>
+      <div>
+        <label>Ghi chú (tuỳ chọn)</label>
+        <input id="genNote" placeholder="ưu tiên dễ dùng, mỗi mục 2 ví dụ..."/>
+      </div>
+    </div>
+
+    <div class="toolbar" style="margin-top:10px">
+      <button class="btn primary" id="btnGen">⚡ Gọi GPT tạo hàng loạt</button>
+      <span class="small right" id="genStatus">Sẵn sàng.</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <h4>⚙️ Cài đặt API</h4>
+    <div class="row">
+      <input id="apiBase" placeholder="https://api.openai.com/v1"/>
+      <input id="apiKey" type="password" placeholder="sk-..."/>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="apiModel" placeholder="gpt-4o-mini"/>
+      <div class="toolbar">
+        <button class="btn" id="btnSaveCfg">🔐 Lưu cấu hình</button>
+        <button class="btn" id="btnTest">🧪 Test</button>
+      </div>
+    </div>
+    <div class="small">Tip: chạy qua <b>http://localhost</b> (không mở file://) để tránh CORS.</div>
+  </section>
+
+  <!-- MANUAL ENTRY -->
+  <section class="panel">
+    <h3>2) Nhập thủ công (mục đã có sẵn)</h3>
+    <div class="row3">
+      <select id="mType">
+        <option value="collocation" selected>Collocation</option>
+        <option value="idiom">Idiom</option>
+        <option value="phrasal">Phrasal verb</option>
+        <option value="academic">Academic phrase</option>
+      </select>
+      <input id="mText" placeholder="Cụm/từ — ví dụ: take a break"/>
+      <input id="mIPA" placeholder="IPA (nếu có) — /teɪk ə breɪk/"/>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="mVi" placeholder="Nghĩa tiếng Việt"/>
+      <input id="mEn" placeholder="Meaning (English)"/>
+    </div>
+    <label>Ví dụ (mỗi dòng một câu)</label>
+    <textarea id="mEx" rows="3" placeholder="Example 1...
+Example 2..."></textarea>
+    <div class="row" style="margin-top:10px">
+      <input id="mAuthor" placeholder="Author (ai tạo) — ví dụ: Me / GPT-4o-mini"/>
+      <input id="mTopic" placeholder="Chủ đề — ví dụ: education"/>
+    </div>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="btn ok" id="btnManual">💾 Lưu thủ công</button>
+      <span class="small">Phần này <b>không</b> gọi GPT. Dành cho nội dung bạn đã có sẵn.</span>
+    </div>
+  </section>
+
+  <!-- LIBRARY & FILTER -->
+  <section class="panel">
+    <h3>3) Thư viện</h3>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-type="all">All</button>
+      <button class="tab" data-type="collocation">Collocations</button>
+      <button class="tab" data-type="idiom">Idioms</button>
+      <button class="tab" data-type="phrasal">Phrasal Verbs</button>
+      <button class="tab" data-type="academic">Academic Phrases</button>
+    </div>
+    <div class="toolbar" style="margin-top:10px">
+      <input id="search" placeholder="Tìm theo text/meaning/topic/author..."/>
+      <span class="chip" id="countChip">0 mục</span>
+      <button class="btn" id="btnExportTxt">Xuất TXT (dòng)</button>
+      <button class="btn" id="btnExportJson">Xuất JSON (chi tiết)</button>
+      <button class="btn danger" id="btnWipe">Xoá tất cả</button>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+</main>
+
+<script>
+/* ========= Helpers ========= */
+const $ = s => document.querySelector(s);
+const esc = (s='') => (s+'').replace(/[&<>]/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;' }[m]));
+const genStatus = $('#genStatus');
+
+/* ========= Storage ========= */
+const STORE_KEY = 'lexi_builder_items';
+const CFG_KEY = 'lexi_builder_cfg';
+let DATA = loadAll(); // {id,type,text,ipa,meaning_vi,meaning_en,examples[],topic,author,source:'gpt'|'manual',saved,createdAt}
+function loadAll(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]') }catch{ return [] } }
+function saveAll(){ localStorage.setItem(STORE_KEY, JSON.stringify(DATA)); render() }
+
+/* ========= Config ========= */
+function loadCfg(){ try{ return JSON.parse(localStorage.getItem(CFG_KEY)||'{}') }catch{ return {} } }
+function saveCfg(cfg){ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)) }
+function applyCfg(){
+  const c = loadCfg();
+  $('#apiBase').value = c.base || 'https://api.openai.com/v1';
+  $('#apiKey').value = c.key || '';
+  $('#apiModel').value = c.model || 'gpt-4o-mini';
+}
+applyCfg();
+
+/* ========= Voice (English) ========= */
+let voices = [], chosenVoice = null;
+function refreshVoices(){
+  voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  chosenVoice = pickEnglishVoice(voices);
+}
+function pickEnglishVoice(vs){
+  const by = p=> vs.find(v=> p(v.lang));
+  return by(l=>/^en-US/i.test(l)) || by(l=>/^en-GB/i.test(l)) || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = refreshVoices; refreshVoices(); }
+function speak(text){
+  if(!('speechSynthesis' in window)){ alert('Trình duyệt không hỗ trợ TTS'); return }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = (chosenVoice && chosenVoice.lang) ? chosenVoice.lang : 'en-US';
+  if(chosenVoice) u.voice = chosenVoice;
+  u.rate = 1.0; u.pitch = 1.0;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+/* ========= Render ========= */
+const list = $('#list'), search = $('#search'), countChip = $('#countChip');
+let currentFilterType = 'all';
+$('#tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilterType = btn.dataset.type;
+  render();
+});
+search.addEventListener('input', render);
+
+function render(){
+  const q = (search.value||'').trim().toLowerCase();
+  list.innerHTML = '';
+  const items = DATA.filter(it=>{
+    if(currentFilterType!=='all' && it.type!==currentFilterType) return false;
+    if(!q) return true;
+    return [
+      it.text, it.meaning_vi, it.meaning_en, it.topic, it.author
+    ].join(' ').toLowerCase().includes(q);
+  });
+  countChip.textContent = `${items.length} mục`;
+  for(const it of items){
+    const row = document.createElement('div');
+    row.className = 'item';
+    const text = document.createElement('div');
+    text.className = 'word';
+    text.textContent = it.text;
+
+    const btnSave = document.createElement('button');
+    btnSave.className = 'btn';
+    btnSave.textContent = it.saved ? 'đã lưu' : 'lưu';
+    if(it.saved) btnSave.classList.add('ok');
+
+    const btnSpeak = document.createElement('button');
+    btnSpeak.className = 'btn';
+    btnSpeak.textContent = '🔊';
+
+    row.appendChild(text);
+    row.appendChild(btnSave);
+    row.appendChild(btnSpeak);
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `Chi tiết ( ${it.type} • ${it.topic||'—'} • by ${it.author||'—'} )`;
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <div><b>IPA:</b> <span class="mono">${esc(it.ipa||'—')}</span></div>
+      <div style="margin-top:6px"><b>Nghĩa (VI):</b> ${esc(it.meaning_vi||'—')}</div>
+      <div style="margin-top:4px"><b>Meaning (EN):</b> ${esc(it.meaning_en||'—')}</div>
+      <div style="margin-top:6px"><b>Ví dụ:</b><br>${(it.examples||[]).map(s=>`• ${esc(s)}`).join('<br>')||'—'}</div>
+      <div class="toolbar" style="margin-top:8px">
+        <button class="btn" data-act="speak-ex">🔊 Ví dụ</button>
+        <button class="btn" data-act="edit">✏️ Sửa</button>
+        <button class="btn danger" data-act="del">🗑️ Xoá</button>
+      </div>
+    `;
+    details.appendChild(summary); details.appendChild(body);
+
+    const wrap = document.createElement('div');
+    wrap.appendChild(row); wrap.appendChild(details);
+    list.appendChild(wrap);
+
+    btnSave.addEventListener('click', ev=>{
+      ev.stopPropagation();
+      it.saved = !it.saved;
+      if(it.saved){ btnSave.classList.add('ok'); btnSave.textContent='đã lưu' }
+      else { btnSave.classList.remove('ok'); btnSave.textContent='lưu' }
+      saveAll();
+    });
+    btnSpeak.addEventListener('click', ev=>{ ev.stopPropagation(); speak(it.text) });
+
+    body.querySelector('[data-act="speak-ex"]').addEventListener('click', ev=>{
+      ev.stopPropagation(); const ex = (it.examples||[])[0] || it.text; speak(ex);
+    });
+    body.querySelector('[data-act="edit"]').addEventListener('click', ev=>{
+      ev.stopPropagation(); editItem(it);
+    });
+    body.querySelector('[data-act="del"]').addEventListener('click', ev=>{
+      ev.stopPropagation();
+      if(confirm(`Xoá "${it.text}"?`)){ DATA = DATA.filter(x=>x!==it); saveAll(); }
+    });
+  }
+}
+function editItem(it){
+  const ipa = prompt('IPA:', it.ipa||''); if(ipa===null) return;
+  const vi  = prompt('Nghĩa (VI):', it.meaning_vi||''); if(vi===null) return;
+  const en  = prompt('Meaning (EN):', it.meaning_en||''); if(en===null) return;
+  const exs = prompt('Ví dụ (ngăn bằng “||”):', (it.examples||[]).join('||')); if(exs===null) return;
+  it.ipa = ipa; it.meaning_vi = vi; it.meaning_en = en; it.examples = exs.split('||').map(s=>s.trim()).filter(Boolean);
+  saveAll();
+}
+render();
+
+/* ========= Manual Save ========= */
+$('#btnManual').addEventListener('click', ()=>{
+  const it = {
+    id: Math.random().toString(36).slice(2,9),
+    type: $('#mType').value,
+    text: ($('#mText').value||'').trim(),
+    ipa: ($('#mIPA').value||'').trim(),
+    meaning_vi: ($('#mVi').value||'').trim(),
+    meaning_en: ($('#mEn').value||'').trim(),
+    examples: ($('#mEx').value||'').split('\n').map(s=>s.trim()).filter(Boolean),
+    topic: ($('#mTopic').value||'').trim(),
+    author: ($('#mAuthor').value||'').trim() || 'manual',
+    source: 'manual',
+    saved: true,
+    createdAt: Date.now()
+  };
+  if(!it.text){ alert('Nhập cụm/từ.'); return }
+  if(DATA.some(x=>x.text.toLowerCase()===it.text.toLowerCase() && x.type===it.type)){
+    alert('Mục này đã tồn tại trong nhóm đã chọn.'); return;
+  }
+  DATA.unshift(it); saveAll();
+  $('#mText').value = $('#mIPA').value = $('#mVi').value = $('#mEn').value = $('#mEx').value = $('#mTopic').value = $('#mAuthor').value = '';
+});
+
+/* ========= Export / Wipe ========= */
+$('#btnExportTxt').addEventListener('click', ()=>{
+  const q=(search.value||'').trim().toLowerCase();
+  const items = DATA.filter(it=>{
+    if(currentFilterType!=='all' && it.type!==currentFilterType) return false;
+    if(!q) return true;
+    return [it.text,it.meaning_vi,it.meaning_en,it.topic,it.author].join(' ').toLowerCase().includes(q);
+  });
+  const lines = items.map(it => `${it.text} [ lưu ] 🔊`);
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='export.txt'; a.click();
+});
+$('#btnExportJson').addEventListener('click', ()=>{
+  const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='export.json'; a.click();
+});
+$('#btnWipe').addEventListener('click', ()=>{
+  if(confirm('Xoá toàn bộ dữ liệu?')){ DATA=[]; saveAll(); }
+});
+
+/* ========= API CFG ========= */
+$('#btnSaveCfg').addEventListener('click', ()=>{
+  saveCfg({
+    base: $('#apiBase').value.trim()||'https://api.openai.com/v1',
+    key: $('#apiKey').value.trim(),
+    model: $('#apiModel').value.trim()||'gpt-4o-mini'
+  });
+  genStatus.textContent = 'Đã lưu cấu hình API.';
+});
+$('#btnTest').addEventListener('click', async ()=>{
+  try{
+    await callGPTBulk({type:'collocation', topic:'general', band:'6.0–6.5', count:1, seed:'risk', author:'test', note:''});
+    alert('Gọi API OK ✅');
+  }catch(e){ alert('Lỗi: '+(e.message||e)) }
+});
+
+/* ========= GPT BULK ========= */
+async function callGPTBulk({type, topic, band, count, seed, author, note}){
+  const cfg = loadCfg();
+  if(!cfg.key) throw new Error('Thiếu API Key. Điền ở phần Cài đặt API.');
+  const base = (cfg.base||'https://api.openai.com/v1').replace(/\/+$/,'');
+  const model = cfg.model || 'gpt-4o-mini';
+
+  const sys = `You are an IELTS-focused lexicography generator. 
+Return STRICT JSON only, no markdown, no commentary.
+You must generate EXACTLY the requested number of UNIQUE items for the given type.
+Types:
+- collocation: natural English collocations widely used in IELTS topics
+- idiom: natural idiomatic expressions (avoid offensive or obscure slang)
+- phrasal: common phrasal verbs with natural objects if needed
+- academic: academic phrases suitable for IELTS Writing Task 2
+For each item, include:
+- text: the expression
+- ipa: IPA for a key headword if applicable ("" if not standard)
+- meaning_vi: concise Vietnamese meaning for IELTS learners
+- meaning_en: concise English definition
+- examples: 2 natural English example sentences tailored to the given topic and level
+JSON schema:
+{ "items": [ { "type": "collocation|idiom|phrasal|academic", "text": string, "ipa": string, "meaning_vi": string, "meaning_en": string, "examples": string[] } ] }`;
+
+  const user = `TYPE: ${type}
+TOPIC: ${topic||'general IELTS'}
+BAND: ${band}
+COUNT: ${count} (generate exactly this number)
+SEED KEYWORDS (optional): ${seed||'-'}
+NOTES: ${note||'-'}
+Constraints:
+- Level: ${band} (B1–B2 for 6.0±, C1 for 7.0+)
+- Examples must be natural, concise, topic-aware.
+- Avoid duplicates, avoid rare/fake expressions.
+- Output JSON only, per schema.`;
+
+  let res;
+  try{
+    res = await fetch(`${base}/chat/completions`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.key}`},
+      body: JSON.stringify({
+        model,
+        messages:[{role:'system',content:sys},{role:'user',content:user}],
+        temperature: 0.25,
+        response_format: { type: "json_object" }
+      })
+    });
+  }catch(err){
+    throw new Error('Không gọi được API (có thể do CORS/file://). Hãy chạy qua http://localhost.');
+  }
+
+  const raw = await res.text();
+  if(!res.ok) throw new Error(`API ${res.status}: ${raw.slice(0,400)}`);
+
+  let js; try{ js = JSON.parse(raw) }catch{ throw new Error('Phản hồi không phải JSON. Raw:\n'+raw.slice(0,400)) }
+  const content = js.choices?.[0]?.message?.content || '{}';
+  let out; try{ out = JSON.parse(content) }catch{ throw new Error('Message không phải JSON hợp lệ. Raw:\n'+content.slice(0,400)) }
+  if(!Array.isArray(out.items)) throw new Error('Thiếu mảng "items" trong JSON.');
+  // Normalize & attach type
+  return out.items.map(it=>({
+    type: it.type || type,
+    text: it.text || '',
+    ipa: it.ipa || '',
+    meaning_vi: it.meaning_vi || '',
+    meaning_en: it.meaning_en || '',
+    examples: Array.isArray(it.examples)? it.examples : [],
+  }));
+}
+
+/* ========= Generate Button ========= */
+$('#btnGen').addEventListener('click', async ()=>{
+  const type = $('#genType').value;
+  const count = Math.min( Math.max(parseInt($('#genCount').value||'0',10) || 0, 1), 200 );
+  const band = $('#genBand').value;
+  const topic = $('#genTopic').value.trim();
+  const seed  = $('#genSeed').value.trim();
+  const author = $('#genAuthor').value.trim() || 'GPT';
+  const note = $('#genNote').value.trim();
+
+  if(!count){ genStatus.textContent='Nhập số lượng > 0'; return }
+  genStatus.textContent = 'Đang gọi GPT…';
+
+  try{
+    const items = await callGPTBulk({type, topic, band, count, seed, author, note});
+    // Merge vào DATA, tránh trùng (type+text)
+    const key = (x)=> (x.type+'|'+x.text.toLowerCase());
+    const exist = new Set(DATA.map(key));
+    const now = Date.now();
+    for(const it of items){
+      if(!it.text) continue;
+      if(exist.has(key(it))) continue;
+      DATA.push({
+        id: Math.random().toString(36).slice(2,9),
+        type: it.type,
+        text: it.text,
+        ipa: it.ipa,
+        meaning_vi: it.meaning_vi,
+        meaning_en: it.meaning_en,
+        examples: it.examples,
+        topic, author,
+        source:'gpt',
+        saved:false,
+        createdAt: now
+      });
+    }
+    saveAll();
+    genStatus.textContent = `Đã thêm ~${items.length} mục (${type}).`;
+  }catch(e){
+    console.error(e);
+    genStatus.textContent = 'Lỗi: ' + (e.message||e);
+    alert(e.message||e);
+  }
+});
+</script>
+</body>
+</html>
